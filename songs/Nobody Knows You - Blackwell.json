@@ -1,0 +1,49 @@
+[
+    {
+        "name": "Nobody Knows You - Blackwell",
+        "timeSig": "4/4",
+        "bpm": "90",
+        "input": ""
+    },
+    {
+        "name": "",
+        "numMeasures": 2,
+        "strumPattern": "Custom",
+        "leftArm": [
+            [
+                "C",
+                "",
+                "",
+                ""
+            ],
+            [
+                "E7",
+                "",
+                "",
+                ""
+            ]
+        ],
+        "rightArm": [
+            [
+                "D",
+                "",
+                "D",
+                "",
+                "D",
+                "",
+                "D",
+                "U"
+            ],
+            [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+            ]
+        ]
+    }
+]
