@@ -1,3 +1,4 @@
+#include "src/logger.h"
 
 String inputString = "";
 bool stringComplete = false;

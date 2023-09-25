@@ -15,5 +15,3 @@
 //what info needed to get motor to press? Uses positioning to press or force?
 
 #endif // GUITARBOT_DEF_H
-
-
