@@ -1,5 +1,5 @@
-#ifndef STRIKER_H
-#define STRIKER_H
+#ifndef SLIDER_H
+#define SLIDER_H
 
 #include "def.h"
 #include "epos4/epos4.h"
@@ -7,7 +7,7 @@
 #include "ErrorDef.h"
 
 
-class Striker {
+class Slider {
 public:
 	enum class Command {
 		Normal,
@@ -18,4 +18,4 @@ private:
 
 };
 
-#endif // STRIKER_H
+#endif // SLIDER_H
