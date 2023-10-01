@@ -108,4 +108,3 @@ namespace Util {
 
 
 #endif // UTIL_H
-}

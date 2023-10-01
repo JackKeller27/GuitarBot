@@ -80,20 +80,21 @@ public:
         switch (mode) {
         case 's':
             return Slider::Command::Normal;
-        case 't':
-            return Slider::Command::Tremolo;
+        //case 't':
+        //    return Slider::Command::Tremolo;
         case 'r':
             return Slider::Command::Restart;
         case 'q':
             return Slider::Command::Quit;
-        case 'c':
-            return Slider::Command::Choreo;
+        //case 'c':
+        //    return Slider::Command::Choreo;
         default:
             LOG_ERROR("unknown command : %i", mode);
             return Slider::Command::Normal;
         }
     }
 
+    //what to do with midiVelocity? Are these params all needed?
     uint8_t prepare(uint8_t idCode, char mode, uint8_t midiVelocity, uint8_t channelPressure) {
         return prepare(idCode, getSliderMode(mode), midiVelocity, channelPressure);
     }
@@ -112,8 +113,9 @@ public:
         return kNoError;
     }
 
+    //what to do with midiVelocity? All params needed?
     uint8_t prepare(uint8_t idCode, Slider::Command mode, uint8_t midiVelocity, uint8_t channelPressure) {
-        uint8_t uiStrike = 0;
+        uint8_t uiSlide = 0;
 
         switch (mode) {
         case Slider::Command::Restart:
@@ -129,18 +131,18 @@ public:
         default:
             for (int i = 1; i < NUM_SLIDERS + 1; ++i) {
                 if (idCode & (1 << (i - 1))) {
-                    bool bStrike = m_slider[i].prepare(mode, midiVelocity, channelPressure);
-                    uiStrike += bStrike << (i - 1);
+                    bool bSlide = m_slider[i].prepare(mode, midiVelocity, channelPressure);
+                    uiSlide += bSlide << (i - 1);
                 }
             }
         }
 
-        return uiStrike;
+        return uiSlide;
     }
 
     void executeCommand(uint8_t idCode, char mode, uint8_t midiVelocity, uint8_t channelPressure) {
-        uint8_t uiStrike = prepare(idCode, mode, midiVelocity, channelPressure);
-        strike(uiStrike);
+        uint8_t uiSlide = prepare(idCode, mode, midiVelocity, channelPressure);
+        slide(uiSlide);
     }
 
     void start() {
@@ -206,11 +208,11 @@ public:
         return kNoError;
     }
 
-    int strike(uint8_t idCode) {
+    int slide(uint8_t idCode) {
         for (int i = 1; i < NUM_SLIDERS + 1; ++i) {
             if (idCode & (1 << (i - 1))) {
                 // LOG_LOG("(idcode: %h) Striking: %i", idCode, i);
-                m_slider[i].strike();
+                m_slider[i].slide();
             }
         }
     }
