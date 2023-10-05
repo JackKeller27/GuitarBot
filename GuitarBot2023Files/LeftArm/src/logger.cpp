@@ -1,5 +1,5 @@
 //
-//Assuming logger file can be directly transferred?
+//
 // 
 
 #include "logger.h"

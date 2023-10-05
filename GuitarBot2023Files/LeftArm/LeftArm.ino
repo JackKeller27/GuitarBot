@@ -26,32 +26,32 @@ void setup() {
 
 // the loop function runs over and over again forever
 void loop() {
-  // if (stringComplete) {
-  //       // LOG_LOG("%s", inputString);
-  //       uint8_t idCode;
-  //       uint8_t midiVelocity;
-  //       uint8_t chPressure;
-  //       char cMode;
-  //       Error_t err = parseCommand(inputString, cMode, idCode, midiVelocity, chPressure);
-  //       inputString = "";
-  //       stringComplete = false;
+  if (stringComplete) {
+        // LOG_LOG("%s", inputString);
+        uint8_t idCode;
+        uint8_t midiVelocity;
+        uint8_t chPressure;
+        char cMode;
+        Error_t err = parseCommand(inputString, cMode, idCode, midiVelocity, chPressure);
+        inputString = "";
+        stringComplete = false;
 
-  //       if (err == kNoError) {
-  //           LOG_LOG("mode %c, idCode: %i, velocity: %i, pressure: %i", cMode, idCode, midiVelocity, chPressure);
-  //           pController->executeCommand(idCode, cMode, midiVelocity, chPressure);
-  //       }
-  //   }
+        if (err == kNoError) {
+            LOG_LOG("mode %c, idCode: %i, velocity: %i, pressure: %i", cMode, idCode, midiVelocity, chPressure);
+            pController->executeCommand(idCode, cMode, midiVelocity, chPressure);
+        }
+    }
 }
 
 //reads info from Arduino to parse a command
 void serialEvent() {
-  // while (Serial.available()) {
-  //     char inChar = (char) Serial.read();
-  //     inputString += inChar;
-  //     if (inChar == '\n') {
-  //         stringComplete = true;
-  //     }
-  // }
+  while (Serial.available()) {
+      char inChar = (char) Serial.read();
+      inputString += inChar;
+      if (inChar == '\n') {
+          stringComplete = true;
+      }
+  }
 }
 
 // Format example to strike using motor 1 with velocity 80: s<SCH>P ... explanation s -> normal slide, <SCH> -> ascii of 0b00000001, P -> ascii of 80
