@@ -5,7 +5,7 @@
 #ifndef GUITARBOT_DEF_H
 #define GUITARBOT_DEF_H
 
-#define NUM_SLIDERS 8
+#define NUM_SLIDERS 1
 
 const int kSliderDirection[9] = { 0, 0, 1, 0, 0, 1, 1, 1, 0 }; // 0 is normal, 1 is flipped, idx 0 is dummy
 

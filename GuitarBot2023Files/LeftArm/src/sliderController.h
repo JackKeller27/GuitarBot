@@ -221,7 +221,7 @@ private:
     Slider m_slider[NUM_SLIDERS + 1]; // 0 is dummy
     static SliderController* pInstance;
     volatile bool m_bPlaying = false;
-    MotorSpec m_motorSpec = MotorSpec::EC60;
+    MotorSpec m_motorSpec = MotorSpec::EC45;
 
     HardwareTimer RPDOTimer;//, faultClearTimer;
 

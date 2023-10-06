@@ -10,18 +10,18 @@ bool stringComplete = false;
 // the setup function runs once when you press reset or power the board
 void setup() {
   LOG_LOG("Initializing GuitarBot's sliders...");
-    inputString.reserve(10);
-    pController = SliderController::createInstance();
-    int err = pController->init(MotorSpec::EC45);
-    if (err != 0) {
-        LOG_ERROR("Controller Init failed");
-        return;
-    }
+  inputString.reserve(10);
+  pController = SliderController::createInstance();
+  int err = pController->init(MotorSpec::EC45);
+  if (err != 0) {
+      LOG_ERROR("Controller Init failed");
+      return;
+  }
 
-    LOG_LOG("Successfully Initialized! Controller Starting...");
-    pController->start();
-    delay(75);
-    LOG_LOG("Listening for commands...");   // "in format (ascii characters) < >< >< >"
+  LOG_LOG("Successfully Initialized! Controller Starting...");
+  pController->start();
+  delay(75);
+  LOG_LOG("Listening for commands...");   // "in format (ascii characters) < >< >< >"
 }
 
 // the loop function runs over and over again forever
