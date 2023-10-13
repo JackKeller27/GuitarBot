@@ -266,7 +266,7 @@ int Epos4::writeObj(_WORD index, _BYTE subIndex, _DWORD param) {
 
     auto waitTime = millis();
     while (m_bSDOBusy) {
-        LOG_LOG("sdo busy");
+        //LOG_LOG("sdo busy");
         delay(1);
         if (m_ulTimeout_ms > 0 && ((millis() - waitTime) > m_ulTimeout_ms)) {
             return -2;

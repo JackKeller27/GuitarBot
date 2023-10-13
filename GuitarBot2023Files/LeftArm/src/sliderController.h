@@ -23,9 +23,9 @@ public:
 
     Error_t init(MotorSpec spec, bool bInitCAN = true) {
         int err = 0;
-
+        
         if (bInitCAN) {
-            if (!CanBus.begin(CAN_BAUD_1000K, CAN_STD_FORMAT)) {
+            if (!CanBus.begin(CAN_BAUD_500K, CAN_STD_FORMAT)) {
                 LOG_ERROR("CAN open failed");
                 return kFileOpenError;
             }

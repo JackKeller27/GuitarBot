@@ -27,7 +27,7 @@ public:
     }
 
     Error_t init(int iNodeId, MotorSpec spec) {
-        int err = epos.init(iNodeId, spec, kSliderDirection[iNodeId], 2000);
+        int err = epos.init(iNodeId, spec, kSliderDirection[iNodeId], 5000);
         if (err != 0) {
             LOG_ERROR("Epos init failed for node id: %i", iNodeId);
             return kSetValueError;
