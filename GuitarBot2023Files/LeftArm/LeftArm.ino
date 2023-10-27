@@ -26,11 +26,11 @@ void setup() {
 
 // the loop function runs over and over again forever
 void loop() {
-  delay(1000);
+  delay(3000);
   uint8_t idCode = 1;
   uint8_t midiVelocity = 80;
   uint8_t chPressure =1;
-  char cMode = 0;
+  char cMode = 's';
   LOG_LOG("mode %c, idCode: %i, velocity: %i, pressure: %i", cMode, idCode, midiVelocity, chPressure);
   pController->executeCommand(idCode, cMode, midiVelocity, chPressure);
   

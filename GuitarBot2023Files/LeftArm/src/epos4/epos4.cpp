@@ -275,6 +275,7 @@ int Epos4::writeObj(_WORD index, _BYTE subIndex, _DWORD param) {
 
     /* check for error code */
     if (m_rxMsg.data[0] == 0x80) {
+        //LOG_LOG("Paramater %i", param);
         m_uiError = (m_rxMsg.data[7] << 24) + (m_rxMsg.data[6] << 16) + (m_rxMsg.data[5] << 8) + (m_rxMsg.data[4]);
         LOG_ERROR("Device Error: %h", m_uiError);
         return -1;
@@ -380,7 +381,7 @@ HomingStatus Epos4::getHomingStatus() {
         LOG_ERROR("readStatusWord");
         return Error;
     }
-    // LOG_LOG("homing status: %h", stat);
+    LOG_LOG("homing status: %h", stat);
 
     if (stat & (1 << 13)) {
         LOG_ERROR("Homing error");
@@ -472,6 +473,8 @@ int Epos4::setOpMode(OpMode opMode, uint8_t uiInterpolationTime, int8_t iInterpo
             LOG_ERROR("setHomingMethod");
             return -1;
         }
+        //set speed and acceleration
+
 
         n = setHomingCurrentThreshold(2000);
         if (n != 0) {
@@ -688,9 +691,32 @@ int Epos4::setProfile(_DWORD vel, _DWORD acc) {
     }
 }
 
+int Epos4::setDigitalInputsLogicState(uint16_t state) {
+    return writeObj(0x3141, 0x01, (uint16_t)state);
+}
+int Epos4::setDigitalInputsPolarity(uint16_t polarity) {
+    return writeObj(0x3141, 0x02, (uint16_t)polarity);
+}
+
 int Epos4::setHomingMethod(HomingMethod method) {
     return writeObj(0x6098, 0x00, (uint8_t)method);
 }
+int Epos4::setHomingAcceleration(uint32_t acc){
+    return writeObj(0x609A, 0x00, (uint32_t)acc);
+}
+int Epos4::setHomingSpeedSwitchSearch(uint32_t speed){
+    return writeObj(0x6099, 0x01, (uint32_t)speed);
+}
+int Epos4::setHomingSpeedZeroSearch(uint32_t speed){
+    return writeObj(0x6099, 0x02, (uint32_t)speed);
+}
+int Epos4::setHomingOffset(uint32_t offset){
+    return writeObj(0x30B1, 0x00, (uint32_t)offset);
+}
+
+
+
+
 
 int Epos4::setHomingCurrentThreshold(_WORD currentThreshold) {
     return writeObj(0x30B2, 0x0, currentThreshold);
@@ -1005,19 +1031,19 @@ int Epos4::PDO_configRPDO3() {
 
     /*
     To be able to change the PDO mapping, the following procedure must be performed:
-    a) Write the value “0” (zero) to subindex 0x00 (disable PDO).
-    b) Modify the desired objects in subindex 0x01…0x0n.
+    a) Write the value ï¿½0ï¿½ (zero) to subindex 0x00 (disable PDO).
+    b) Modify the desired objects in subindex 0x01ï¿½0x0n.
     c) Write the desired number of mapped objects to subindex 0x00.
     */
 
-    // // Write the value “0” (zero) to subindex 0x00 (disable PDO).
+    // // Write the value ï¿½0ï¿½ (zero) to subindex 0x00 (disable PDO).
     // err = writeObj(0x1602, 0x00, 0);
     // if (err != 0) {
     //     LOG_ERROR("write zero to 0x00 failed for RPDO3. Error code: %h", m_uiError);
     //     return err;
     // }
 
-    // // Modify the desired objects in subindex 0x01…0x0n.
+    // // Modify the desired objects in subindex 0x01ï¿½0x0n.
     // err = writeObj(0x1602, 0x01, 0x60400010);   // Controlword
     // if (err != 0) {
     //     LOG_ERROR("write to 0x01 failed for RPDO3. Error code: %h", m_uiError);
@@ -1059,19 +1085,19 @@ int Epos4::PDO_configRPDO4() {
 
     /*
     To be able to change the PDO mapping, the following procedure must be performed:
-    a) Write the value “0” (zero) to subindex 0x00 (disable PDO).
-    b) Modify the desired objects in subindex 0x01…0x0n.
+    a) Write the value ï¿½0ï¿½ (zero) to subindex 0x00 (disable PDO).
+    b) Modify the desired objects in subindex 0x01ï¿½0x0n.
     c) Write the desired number of mapped objects to subindex 0x00.
     */
 
-    // // Write the value “0” (zero) to subindex 0x00 (disable PDO).
+    // // Write the value ï¿½0ï¿½ (zero) to subindex 0x00 (disable PDO).
     // err = writeObj(0x1603, 0x00, 0);
     // if (err != 0) {
     //     LOG_ERROR("write zero to 0x00 failed for RPDO4. Error code: %h", m_uiError);
     //     return err;
     // }
 
-    // // Modify the desired objects in subindex 0x01…0x0n.
+    // // Modify the desired objects in subindex 0x01ï¿½0x0n.
     // err = writeObj(0x1603, 0x01, 0x60810020);   // Velocity
     // if (err != 0) {
     //     LOG_ERROR("write to 0x01 failed for RPDO4. Error code: %h", m_uiError);

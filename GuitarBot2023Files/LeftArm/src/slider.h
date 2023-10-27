@@ -36,6 +36,8 @@ public:
         m_iCurrentIdx = kTotalPoints;
         m_mode = Command::Restart;
         Error_t e = home();
+        //New Homing Method
+
         if (e != kNoError) return e;
 
         m_bInitialized = true;
@@ -49,16 +51,71 @@ public:
     }
 
     Error_t home() {
-        int err = epos.SetHomePosition(0);
+        // New
+        int err = epos.setOpMode(OpMode::Homing, HomingMethod::CurrentThresholdPositive);
+        if(err == -1) return kSetValueError; //replace error with new error: homing failed
+        err = epos.SetHomePosition(0);
         if (err != 0) return kSetValueError;
+
+        err = epos.setHomingMethod(CurrentThresholdPositive);
+        if (err != 0) return kSetValueError; //replace with error setting homing speed switch
+
+        err = epos.setHomingSpeedSwitchSearch(100);
+        if (err != 0) return kSetValueError; //replace with error setting homing speed switch
+
+        err = epos.setHomingSpeedZeroSearch(10);
+        if (err != 0) return kSetValueError; //replace with error setting homing speed zero
+
+        err = epos.setHomingAcceleration(1000);
+        if (err != 0) return kSetValueError; //replace with error setting homing acceleration
+
+        err = epos.setHomingOffset(50);
+        if (err != 0) return kSetValueError; //replace with error setting homing offset
+
         return prepToGoHome();
     }
 
     Error_t prepToGoHome() {
-        m_mode = Command::Restart;
-        Error_t err = generateTraj(0);
-        m_iCurrentIdx = 0;
-        return err;
+//        m_mode = Command::Restart;
+//        Error_t err = generateTraj(0);
+//        m_iCurrentIdx = 0;
+        //New
+        int err = epos.startHoming();
+        if(err != 0)
+        {
+            LOG_LOG("Error: Homing procedure failed. (Code: %d)\n", err);
+            return kSetValueError; //replace with  error: homing process failed
+        }
+        LOG_LOG("Homing Start Status is: %i", epos.getHomingStatus());
+        LOG_LOG("Homing Started");
+
+        bool homingAttained = false;
+        while(!homingAttained)
+        {
+            HomingStatus homingStatus = epos.getHomingStatus();
+            //delay(100);
+            homingStatus = epos.getHomingStatus();
+            LOG_LOG("Homing Status is: %i", epos.getHomingStatus());
+            switch(homingStatus)
+            {
+            case Completed:
+                homingAttained = true;
+                LOG_LOG("Homing Complete");
+                break;
+            case InProgress:
+                LOG_LOG("Homing In-Progress");
+            case Interrupted:
+                LOG_LOG("Homing Interrupted");
+                return kSetValueError; //replace with error: "Homing Interrupted"
+            case Error:
+                LOG_LOG("Homing Errored");
+                return kSetValueError; //replace with Error: "Homing Error"
+            }
+
+        }
+        //return err;
+        //New
+        return kNoError;
     }
 
     // Prepare and return true if should slider, false if shouldn't slide

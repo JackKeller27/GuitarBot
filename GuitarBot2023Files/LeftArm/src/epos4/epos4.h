@@ -79,7 +79,16 @@ public:
     int shutdown();
     int setEnable(bool bEnable = true);
     int setProfile(_DWORD vel = 1000, _DWORD acc = 10000);
+
+    int setDigitalInputsLogicState(uint16_t state);
+    int setDigitalInputsPolarity(uint16_t polarity);
+
     int setHomingMethod(HomingMethod method);
+    int setHomingAcceleration(uint32_t acc);
+    int setHomingSpeedSwitchSearch(uint32_t speed);
+    int setHomingSpeedZeroSearch(uint32_t speed);
+    int setHomingOffset(uint32_t offset);
+
     int setHomingCurrentThreshold(_WORD currentThreshold);
     int moveToPosition(int32_t pos, bool bWait = true);
     int rotate(float fAngle, bool bRadian = true, bool bWait = true);
