@@ -53,26 +53,43 @@ public:
     Error_t home() {
         // New
         int err = epos.setOpMode(OpMode::Homing, HomingMethod::CurrentThresholdPositive);
-        if(err == -1) return kSetValueError; //replace error with new error: homing failed
-        err = epos.SetHomePosition(0);
-        if (err != 0) return kSetValueError;
+        if (err != 0) {
+            LOG_ERROR("setOpMode");
+            return kSetValueError;
+        }
 
-        err = epos.setHomingMethod(CurrentThresholdPositive);
-        if (err != 0) return kSetValueError; //replace with error setting homing speed switch
+        err = epos.setEnable();
+        if (err != 0) {
+            LOG_ERROR("setEnable");
+            return kSetValueError;
+        }
 
-        err = epos.setHomingSpeedSwitchSearch(100);
-        if (err != 0) return kSetValueError; //replace with error setting homing speed switch
+        err = epos.startHoming();
+        if (err != 0) {
+            LOG_ERROR("startHoming");
+            return kSetValueError;
+        }
 
-        err = epos.setHomingSpeedZeroSearch(10);
-        if (err != 0) return kSetValueError; //replace with error setting homing speed zero
+        int ii = 0;
+        bool isHoming = true;
+        while (isHoming) {
+            isHoming = (epos.getHomingStatus() == InProgress);
+            delay(50);
+            if (ii++ > 200) break;
+        }
 
-        err = epos.setHomingAcceleration(1000);
-        if (err != 0) return kSetValueError; //replace with error setting homing acceleration
+        delay(1000);
 
-        err = epos.setHomingOffset(50);
-        if (err != 0) return kSetValueError; //replace with error setting homing offset
+        err = epos.setEnable(false);
+        if (err != 0) {
+            LOG_ERROR("Disable");
+            return kSetValueError;
+        }
 
-        return prepToGoHome();
+        return kNoError;
+
+
+        //return prepToGoHome();
     }
 
     Error_t prepToGoHome() {
@@ -80,21 +97,20 @@ public:
 //        Error_t err = generateTraj(0);
 //        m_iCurrentIdx = 0;
         //New
-        int err = epos.startHoming();
-        if(err != 0)
-        {
-            LOG_LOG("Error: Homing procedure failed. (Code: %d)\n", err);
-            return kSetValueError; //replace with  error: homing process failed
-        }
-        LOG_LOG("Homing Start Status is: %i", epos.getHomingStatus());
-        LOG_LOG("Homing Started");
+//        int err = epos.startHoming();
+//        if(err != 0)
+//        {
+//            LOG_LOG("Error: Homing procedure failed. (Code: %d)\n", err);
+//            return kSetValueError; //replace with  error: homing process failed
+//        }
+//        LOG_LOG("Homing Start Status is: %i", epos.getHomingStatus());
+//        LOG_LOG("Homing Started");
 
         bool homingAttained = false;
         while(!homingAttained)
         {
+            delay(1000);
             HomingStatus homingStatus = epos.getHomingStatus();
-            //delay(100);
-            homingStatus = epos.getHomingStatus();
             LOG_LOG("Homing Status is: %i", epos.getHomingStatus());
             switch(homingStatus)
             {
@@ -104,6 +120,7 @@ public:
                 break;
             case InProgress:
                 LOG_LOG("Homing In-Progress");
+                break;
             case Interrupted:
                 LOG_LOG("Homing Interrupted");
                 return kSetValueError; //replace with error: "Homing Interrupted"

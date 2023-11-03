@@ -88,6 +88,8 @@ public:
     int setHomingSpeedSwitchSearch(uint32_t speed);
     int setHomingSpeedZeroSearch(uint32_t speed);
     int setHomingOffset(uint32_t offset);
+    int setMotionProfileType(uint16_t type);
+    int setHomePosition(uint32_t offset);
 
     int setHomingCurrentThreshold(_WORD currentThreshold);
     int moveToPosition(int32_t pos, bool bWait = true);

@@ -381,7 +381,7 @@ HomingStatus Epos4::getHomingStatus() {
         LOG_ERROR("readStatusWord");
         return Error;
     }
-    LOG_LOG("homing status: %h", stat);
+    //LOG_LOG("homing status: %h", stat);
 
     if (stat & (1 << 13)) {
         LOG_ERROR("Homing error");
@@ -468,19 +468,63 @@ int Epos4::setOpMode(OpMode opMode, uint8_t uiInterpolationTime, int8_t iInterpo
         break;
 
     case Homing:
+
+//        reset();
+//
+//        n = setMotionProfileType(0);
+//        if (n != 0){
+//            LOG_ERROR("setMotionProfileType");
+//            return -1;
+//        }
+
         n = setHomingMethod(homingMethod);
         if (n != 0) {
             LOG_ERROR("setHomingMethod");
             return -1;
         }
-        //set speed and acceleration
 
+//        n = setHomingSpeedSwitchSearch(200);
+//        if (n != 0){
+//            LOG_ERROR("setHomingSpeedSwitch");
+//            return -1;
+//        }
+//
+//        n = setHomingSpeedZeroSearch(10);
+//        if (n != 0){
+//            LOG_ERROR("setHomingZeroSearch");
+//            return -1;
+//        }
+//
+//        n = setHomingAcceleration(1000);
+//        if (n != 0){
+//            LOG_ERROR("setHomingAcceleration");
+//            return -1;
+//        }
+//
+//        n = setHomingOffset(50);
+//        if (n != 0){
+//            LOG_ERROR("setHomingOffset");
+//            return -1;
+//        }
+//
+//        n = setHomePosition(0);
+//        if (n != 0) {
+//            LOG_ERROR("SetHomePosition");
+//            return -1;
+//        }
 
         n = setHomingCurrentThreshold(2000);
         if (n != 0) {
             LOG_ERROR("setHomingCurrentThreshold");
             return -1;
         }
+
+//        n = startHoming();
+//        if (n != 0) {
+//            LOG_ERROR("startHomingError");
+//            return -1;
+//        }
+
         break;
 
     case CyclicSyncPosition:
@@ -691,13 +735,14 @@ int Epos4::setProfile(_DWORD vel, _DWORD acc) {
     }
 }
 
+
+
 int Epos4::setDigitalInputsLogicState(uint16_t state) {
     return writeObj(0x3141, 0x01, (uint16_t)state);
 }
 int Epos4::setDigitalInputsPolarity(uint16_t polarity) {
     return writeObj(0x3141, 0x02, (uint16_t)polarity);
 }
-
 int Epos4::setHomingMethod(HomingMethod method) {
     return writeObj(0x6098, 0x00, (uint8_t)method);
 }
@@ -713,6 +758,13 @@ int Epos4::setHomingSpeedZeroSearch(uint32_t speed){
 int Epos4::setHomingOffset(uint32_t offset){
     return writeObj(0x30B1, 0x00, (uint32_t)offset);
 }
+int Epos4::setHomePosition(uint32_t pos){
+    return writeObj(0x30B0, 0x00, (uint32_t)pos);
+}
+int Epos4::setMotionProfileType(uint16_t type) {
+    return writeObj(0x6086, 0x00, (uint16_t)type);
+}
+
 
 
 
@@ -819,7 +871,7 @@ int Epos4::quickStop() {
 int Epos4::startHoming() {
     // This delay is needed for homing to work
     delay(50);  // Can be as low as 10ms
-    return setControlWord(0x001F);
+    return setControlWord(0x001F); //set control word before setting parameters
 }
 
 int Epos4::SetHomePosition(int32_t iPos) {
