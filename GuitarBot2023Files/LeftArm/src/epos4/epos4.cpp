@@ -258,7 +258,9 @@ int Epos4::writeObj(_WORD index, _BYTE subIndex, _DWORD param) {
     m_txMsg.data[6] = (param & 0xFF0000) >> 16;
     m_txMsg.data[7] = (param & 0xFF000000) >> 24;
 
+    LOG_LOG("reached 1");
     int n = CanBus.writeMessage(&m_txMsg);
+    LOG_LOG("reached 2");
     if (n != 8) {
         LOG_ERROR("CanBus WriteMessage failed. Wrote %i bytes instead of %i bytes", 8);
         return -1;
@@ -468,62 +470,17 @@ int Epos4::setOpMode(OpMode opMode, uint8_t uiInterpolationTime, int8_t iInterpo
         break;
 
     case Homing:
-
-//        reset();
-//
-//        n = setMotionProfileType(0);
-//        if (n != 0){
-//            LOG_ERROR("setMotionProfileType");
-//            return -1;
-//        }
-
         n = setHomingMethod(homingMethod);
-        if (n != 0) {
-            LOG_ERROR("setHomingMethod");
-            return -1;
-        }
+            if (n != 0) {
+                LOG_ERROR("setHomingMethod");
+                return -1;
+            }
 
-//        n = setHomingSpeedSwitchSearch(200);
-//        if (n != 0){
-//            LOG_ERROR("setHomingSpeedSwitch");
-//            return -1;
-//        }
-//
-//        n = setHomingSpeedZeroSearch(10);
-//        if (n != 0){
-//            LOG_ERROR("setHomingZeroSearch");
-//            return -1;
-//        }
-//
-//        n = setHomingAcceleration(1000);
-//        if (n != 0){
-//            LOG_ERROR("setHomingAcceleration");
-//            return -1;
-//        }
-//
-//        n = setHomingOffset(50);
-//        if (n != 0){
-//            LOG_ERROR("setHomingOffset");
-//            return -1;
-//        }
-//
-//        n = setHomePosition(0);
-//        if (n != 0) {
-//            LOG_ERROR("SetHomePosition");
-//            return -1;
-//        }
-
-        n = setHomingCurrentThreshold(2000);
-        if (n != 0) {
-            LOG_ERROR("setHomingCurrentThreshold");
-            return -1;
-        }
-
-//        n = startHoming();
-//        if (n != 0) {
-//            LOG_ERROR("startHomingError");
-//            return -1;
-//        }
+            n = setHomingCurrentThreshold(2000);
+            if (n != 0) {
+                LOG_ERROR("setHomingCurrentThreshold");
+                return -1;
+            }
 
         break;
 
@@ -871,7 +828,7 @@ int Epos4::quickStop() {
 int Epos4::startHoming() {
     // This delay is needed for homing to work
     delay(50);  // Can be as low as 10ms
-    return setControlWord(0x001F); //set control word before setting parameters
+    return setControlWord(0x001F);
 }
 
 int Epos4::SetHomePosition(int32_t iPos) {

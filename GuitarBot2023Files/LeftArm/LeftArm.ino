@@ -9,6 +9,7 @@ bool stringComplete = false;
 
 // the setup function runs once when you press reset or power the board
 void setup() {
+  delay(2000);
   LOG_LOG("Initializing GuitarBot's sliders...");
   inputString.reserve(10);
   pController = SliderController::createInstance();
@@ -26,30 +27,30 @@ void setup() {
 
 // the loop function runs over and over again forever
 void loop() {
-  delay(3000);
-  uint8_t idCode = 1;
-  uint8_t midiVelocity = 80;
-  uint8_t chPressure =1;
-  char cMode = 's';
-  LOG_LOG("mode %c, idCode: %i, velocity: %i, pressure: %i", cMode, idCode, midiVelocity, chPressure);
-  pController->executeCommand(idCode, cMode, midiVelocity, chPressure);
+  // delay(3000);
+  // uint8_t idCode = 1;
+  // uint8_t midiVelocity = 80;
+  // uint8_t chPressure =1;
+  // char cMode = 's';
+  // LOG_LOG("mode %c, idCode: %i, velocity: %i, pressure: %i", cMode, idCode, midiVelocity, chPressure);
+  // pController->executeCommand(idCode, cMode, midiVelocity, chPressure);
   
 
-  //if (stringComplete) {
-  //      // LOG_LOG("%s", inputString);
-  //      uint8_t idCode;
-  //      uint8_t midiVelocity;
-  //      uint8_t chPressure;
-  //      char cMode;
-  //      Error_t err = parseCommand(inputString, cMode, idCode, midiVelocity, chPressure);
-  //      inputString = "";
-  //      stringComplete = false;
+  if (stringComplete) {
+       // LOG_LOG("%s", inputString);
+       uint8_t idCode;
+       uint8_t midiVelocity;
+       uint8_t chPressure;
+       char cMode;
+       Error_t err = parseCommand(inputString, cMode, idCode, midiVelocity, chPressure);
+       inputString = "";
+       stringComplete = false;
   
-  //      if (err == kNoError) {
-  //          LOG_LOG("mode %c, idCode: %i, velocity: %i, pressure: %i", cMode, idCode, midiVelocity, chPressure);
-  //          pController->executeCommand(idCode, cMode, midiVelocity, chPressure);
-  //      }
-  //  }
+       if (err == kNoError) {
+           LOG_LOG("mode %c, idCode: %i, velocity: %i, pressure: %i", cMode, idCode, midiVelocity, chPressure);
+           pController->executeCommand(idCode, cMode, midiVelocity, chPressure);
+       }
+   }
 }
 
 //reads info from Arduino to parse a command

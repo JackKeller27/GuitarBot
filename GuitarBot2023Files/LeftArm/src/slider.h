@@ -69,7 +69,7 @@ public:
             LOG_ERROR("startHoming");
             return kSetValueError;
         }
-
+        //return prepToGoHome();
         int ii = 0;
         bool isHoming = true;
         while (isHoming) {
@@ -77,7 +77,7 @@ public:
             delay(50);
             if (ii++ > 200) break;
         }
-
+        if (epos.getHomingStatus() == Completed) LOG_LOG("Homing complete");
         delay(1000);
 
         err = epos.setEnable(false);
@@ -87,9 +87,6 @@ public:
         }
 
         return kNoError;
-
-
-        //return prepToGoHome();
     }
 
     Error_t prepToGoHome() {
@@ -104,13 +101,14 @@ public:
 //            return kSetValueError; //replace with  error: homing process failed
 //        }
 //        LOG_LOG("Homing Start Status is: %i", epos.getHomingStatus());
-//        LOG_LOG("Homing Started");
+        LOG_LOG("Homing Started");
 
         bool homingAttained = false;
         while(!homingAttained)
         {
-            delay(1000);
             HomingStatus homingStatus = epos.getHomingStatus();
+            //delay(100);
+            homingStatus = epos.getHomingStatus();
             LOG_LOG("Homing Status is: %i", epos.getHomingStatus());
             switch(homingStatus)
             {
@@ -120,7 +118,6 @@ public:
                 break;
             case InProgress:
                 LOG_LOG("Homing In-Progress");
-                break;
             case Interrupted:
                 LOG_LOG("Homing Interrupted");
                 return kSetValueError; //replace with error: "Homing Interrupted"

@@ -9,6 +9,8 @@
 
 const int kSliderDirection[9] = { 0, 0, 1, 0, 0, 1, 1, 1, 0 }; // 0 is normal, 1 is flipped, idx 0 is dummy
 
+const float fretPositions[10] = {20, 52.6, 86, 120, 150, 170, 198, 224, 248, 260};  // using Saksham's final tuning values
+
 #define HOME_POSITION 25 // Deg
 
 #define MAX_TRAJ_POINTS 5000
