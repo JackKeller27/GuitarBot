@@ -1,9 +1,9 @@
 //
-//
+// Created by Raghavasimhan Sankaranarayanan on 03/30/22.
 //
 
-#ifndef SLIDER_H
-#define SLIDER_H
+#ifndef STRIKER_H
+#define STRIKER_H
 
 #include "def.h"
 #include "epos4/epos4.h"
@@ -11,7 +11,7 @@
 #include "ErrorDef.h"
 
 
-class Slider {
+class Striker {
 public:
     enum class Command {
         Normal,
@@ -22,13 +22,13 @@ public:
         Choreo
     };
 
-    ~Slider() {
+    ~Striker() {
         reset();
     }
 
     Error_t init(int iNodeId, MotorSpec spec) {
         LOG_LOG("%i", iNodeId);
-        int err = epos.init(iNodeId, spec, kSliderDirection[iNodeId], 2000);
+        int err = epos.init(iNodeId, spec, kStrikerDirection[iNodeId], 2000);
         if (err != 0) {
             LOG_ERROR("Epos init failed for node id: %i", iNodeId);
             return kSetValueError;
@@ -36,10 +36,11 @@ public:
 
         m_iCurrentIdx = kTotalPoints;
         m_mode = Command::Restart;
-
-        LOG_LOG("Start Homing");
-        Error_t e = home();
-        if (e != kNoError) return e;
+        if (spec==EC45) {
+            LOG_LOG("Start Homing");
+            Error_t e = home();
+            if (e != kNoError) return e;
+        }
 
         m_bInitialized = true;
 
@@ -52,7 +53,7 @@ public:
 
     void reset() {
         epos.reset();
-        stopSlide();
+        stopStrike();
         m_bInitialized = false;
     }
 
@@ -61,7 +62,7 @@ public:
 //        if (err != 0) return kSetValueError;
 //        return prepToGoHome();
         // Added Homing compatible w/ epos
-        int err = epos.setOpMode(OpMode::Homing, HomingMethod::CurrentThresholdPositive);
+        int err = epos.setOpMode(OpMode::Homing, HomingMethod::CurrentThresholdNegative);
         if (err != 0) {
             LOG_ERROR("setOpMode");
             return kSetValueError;
@@ -86,6 +87,7 @@ public:
             delay(50);
             if (ii++ > 200) break;
         }
+
         if (epos.getHomingStatus() == Completed) LOG_LOG("Homing complete");
         delay(1000);
 
@@ -105,14 +107,14 @@ public:
         return err;
     }
 
-    // Prepare and return true if should slider, false if shouldn't slide
-    bool prepare(Command mode, uint8_t midiVelocity, uint8_t channelPressure) {
+    // Prepare and return true if should striker, false if shouldn't strike
+    bool prepare(Command mode, int midiVelocity, uint8_t channelPressure) {
         if (!m_bInitialized) return false;
 
         // If current mode is tremolo
         // If incoming mode is tremolo, dont do anything
         // if incoming mode is different, first stop tremolo
-        if (m_mode == Slider::Command::Tremolo) {
+        if (m_mode == Striker::Command::Tremolo) {
             // If mode is already Tremolo, don't generate new traj
             if (mode == m_mode) return false;
             else stopTremolo();
@@ -136,7 +138,7 @@ public:
 
         Error_t err = generateTraj(midiVelocity, channelPressure);
         if (err != 0) {
-            LOG_ERROR("Error preparing slider %i with mode %i and velocity %i", epos.getNodeId(), mode, midiVelocity);
+            LOG_ERROR("Error preparing striker %i with mode %i and velocity %i", epos.getNodeId(), mode, midiVelocity);
             return false;
         }
 
@@ -153,7 +155,7 @@ public:
 
         // Check if device is in fault state
         if (!epos.isDeviceReady()) {
-            stopSlide();
+            stopStrike();
             return;
         }
 
@@ -197,6 +199,22 @@ public:
     void handleEMCYMsg(can_message_t& msg) {
         epos.handleEMCYMsg(msg);
     }
+    Error_t enablePDOEC20(bool bEnable) {
+        int err = 0;
+
+        if (bEnable) {
+            err = epos.setOpMode(OpMode::CyclicSyncTorque);
+            err = epos.setNMTState(NMTState::Operational);
+        } else {
+            err = epos.setNMTState(NMTState::PreOperational);
+        }
+
+        if (err != 0) return kSetValueError;
+
+        return kNoError;
+    }
+
+
 
     Error_t enablePDO(bool bEnable) {
         int err = 0;
@@ -216,15 +234,14 @@ public:
     Error_t enable(bool bEnable) {
         int err = epos.setEnable(bEnable);
         if (err != 0) return kSetValueError;
-
         return kNoError;
     }
 
-    void slide() {
+    void strike() {
         m_iCurrentIdx = 0;  // This will trigger the update
     }
 
-    void stopSlide() {
+    void stopStrike() {
         m_iCurrentIdx = MAX_TRAJ_POINTS;   // This will stop the trajectory update
         Util::fill(m_afTraj, MAX_TRAJ_POINTS, 0);  // reset trajectory array
     }
@@ -237,18 +254,18 @@ public:
         m_mode = Command::Tremolo;
         m_iCurrentIdx = MAX_TRAJ_POINTS;
         generateTraj(midiVelocity);
-        slide();
+        strike();
     }
 
     void stopTremolo() {
         m_mode = Command::Normal;
-        stopSlide();
+        stopStrike();
         m_iTremoloStartIdx = 0;
         m_iEndIdx = MAX_TRAJ_POINTS;
     }
 
     void checkAndRecover() {
-        // This function uses SDO (very expensive).
+        // This function uses SDO (very expensive). 
         // Dont do anything if device is ready.
         if (epos.isDeviceReady()) return;
 
@@ -293,65 +310,67 @@ private:
     int m_iTremoloStartIdx = 0;
     int m_iTremoloEndIdx = 0;
 
-    Error_t generateTraj(uint8_t midiVelocity, uint8_t channelPressure = 0) {
+    Error_t generateTraj(int midiVelocity, uint8_t channelPressure = 0) {
         float q0, qf;
 
         switch (m_mode) {
-            case Command::Restart:
-            case Command::StopTremolo:
-                q0 = epos.getCurrentPosition_deg();;
-                qf = HOME_POSITION;
-                Util::interpWithBlend(q0, qf, kTotalPoints, 0.25, m_afTraj);
-                m_iEndIdx = kTotalPoints - 1;
-                return kNoError;
+        case Command::Restart:
+        case Command::StopTremolo:
+            q0 = epos.getCurrentPosition_deg();;
+            qf = HOME_POSITION;
+            Util::interpWithBlend(q0, qf, kTotalPoints, 0.25, m_afTraj);
+            m_iEndIdx = kTotalPoints - 1;
+            return kNoError;
 
-            case Command::Quit:
-                LOG_ERROR("Cannot generate trajectory for mode: {}", (int) m_mode);
-                return kTrajectoryError;
+        case Command::Quit:
+            LOG_ERROR("Cannot generate trajectory for mode: {}", (int) m_mode);
+            return kTrajectoryError;
 
-            case Command::Choreo:
-                q0 = epos.getCurrentPosition_deg();
-                qf = choreoPositionMap(channelPressure);
-                m_iEndIdx = choreoTimeMap(midiVelocity) - 1;
-                // char msg[64];
-                // sprintf(msg, "q0: %i, qf: %i, endIdx: %i", (int) (q0 * 100), (int) (qf * 100), m_iEndIdx);
-                // Serial.println(msg);
-                Util::interpWithBlend(q0, qf, m_iEndIdx + 1, 0.49, m_afTraj);
+        case Command::Choreo:
+            q0 = epos.getCurrentPosition_deg();
+            qf = choreoPositionMap(channelPressure);
+            m_iEndIdx = choreoTimeMap(midiVelocity) - 1;
+            // char msg[64];
+            // sprintf(msg, "q0: %i, qf: %i, endIdx: %i", (int) (q0 * 100), (int) (qf * 100), m_iEndIdx);
+            // Serial.println(msg);
+            Util::interpWithBlend(q0, qf, m_iEndIdx + 1, 0.49, m_afTraj);
 
-                return kNoError;
+            return kNoError;
 
-            default:
-                break;
+        default:
+            break;
         }
 
-        float fInitialPosition_deg, fSlidePosition_deg, fBlend;
+        float fInitialPosition_deg, fStrikePosition_deg, fBlend;
         int iNumPtsForHit, iNumPtsForUp;
 
-        velocityMap(midiVelocity, fInitialPosition_deg, fSlidePosition_deg, fBlend);
+        velocityMap(midiVelocity, fInitialPosition_deg, fStrikePosition_deg, fBlend);
         timeMap(midiVelocity, iNumPtsForHit, iNumPtsForUp);
 
         // go to initial position
+//        q0 = epos.getCurrentPosition_deg();
+//        qf = fInitialPosition_deg;
+//        Util::interpWithBlend(q0, q0, 50, 0.25, m_afTraj);
+
+
+//      //Move to next fret
         q0 = epos.getCurrentPosition_deg();
-        qf = fInitialPosition_deg;
-        Util::interpWithBlend(q0, qf, iNumPtsForUp, 0.25, m_afTraj);
+        //best movement traj
+//        Util::interpWithBlend(q0, midiVelocity, 70, fBlend, m_afTraj);
+        Util::interpWithBlend(q0, midiVelocity, 70, .15, m_afTraj);
 
-        // Downward movement
-        q0 = fInitialPosition_deg;
-        qf = fSlidePosition_deg;
-        Util::interpWithBlend(q0, qf, iNumPtsForHit - iNumPtsForUp, fBlend, &m_afTraj[iNumPtsForUp]);
-
-        // upward movement
-        q0 = fSlidePosition_deg;
-        qf = (m_mode == Command::Tremolo) ? fInitialPosition_deg : HOME_POSITION;
-        float blend = (m_mode == Command::Tremolo) ? fBlend : 0.25;
-        Util::interpWithBlend(q0, qf, iNumPtsForUp, blend, &m_afTraj[iNumPtsForHit]);
+//        // upward movement
+//        q0 = fStrikePosition_deg;
+//        qf = (m_mode == Command::Tremolo) ? fInitialPosition_deg : HOME_POSITION;
+//        float blend = (m_mode == Command::Tremolo) ? fBlend : 0.25;
+//        Util::interpWithBlend(q0, qf, iNumPtsForUp, blend, &m_afTraj[iNumPtsForHit]);
         m_iEndIdx = kTotalPoints - 1;
 
         return kNoError;
     }
 
     float choreoPositionMap(uint8_t pressure) {
-        pressure = min(MAX_SLIDER_ANGLE_DEG, pressure);
+        pressure = min(MAX_STRIKER_ANGLE_DEG, pressure);
         return (float) pressure;
     }
 
@@ -363,7 +382,7 @@ private:
         return min(MAX_TRAJ_POINTS, (int) round((MAX_TRAJ_POINTS / m)) + b);
     }
 
-    void timeMap(uint8_t midiVelocity, int& iNumPointsForHit, int& iNumPointsForUp) {
+    void timeMap(int midiVelocity, int& iNumPointsForHit, int& iNumPointsForUp) {
         iNumPointsForHit = kNumPointsForHit;
         iNumPointsForUp = kNumPointsForUp;
 
@@ -381,10 +400,10 @@ private:
         }
     }
 
-    void velocityMap(uint8_t midiVelocity, float& fInitialPosition, float& fSlidePosition, float& fBlend) {
+    void velocityMap(int midiVelocity, float& fInitialPosition, float& fStrikePosition, float& fBlend) {
         /*
         fInitialPosition = midiVelocity * 0.3 + 10;
-        fSlidePosition = -midiVelocity * 0.5;
+        fStrikePosition = -midiVelocity * 0.5;
         fBlend = 8.f / max(16, midiVelocity);
         */
 
@@ -392,20 +411,22 @@ private:
 
         // Mapping from velocity to position and blend
         fInitialPosition = midiVelocity * 0.3 + 10;
-        fSlidePosition = -midiVelocity * 0.5;
-        fBlend = 8.f / max(16, midiVelocity);
+        fStrikePosition = -midiVelocity * 0.5;
+        // best
+        // fBlend = 8.f / 70;
+        fBlend = 8.f / 180;
 
         if (m_mode == Command::Tremolo) {
             fInitialPosition = midiVelocity * 0.1 + 10;
-            fSlidePosition = -midiVelocity * 0.3;
+            fStrikePosition = -midiVelocity * 0.3;
         }
     }
 
-    uint8_t getCorrectedVelocity(uint8_t midiVelocity) {
-        // Correction for slide command arriving faster than expected
+    uint8_t getCorrectedVelocity(int midiVelocity) {
+        // Correction for strike command arriving faster than expected
         float timeCorrection = min(1.f, m_iCurrentIdx / (1.f * kTotalPoints));
         return min(127, midiVelocity * sq(timeCorrection));
     }
 };
 
-#endif // SLIDER_H
+#endif // STRIKER_H

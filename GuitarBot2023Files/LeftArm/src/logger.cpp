@@ -1,14 +1,14 @@
 //
-//
+// Created by Raghavasimhan Sankaranarayanan on 11/26/21.
 // 
 
 #include "logger.h"
 
 Logger* Logger::pLogger = nullptr;
 
-Logger::Logger(Logger::LogLevel logLevel) : m_iLevel(logLevel) {
+Logger::Logger(Logger::LogLevel logLevel): m_iLevel(logLevel) {
     Serial.begin(115200);
-    while (!Serial) {}
+    // while (!Serial) {}
 }
 
 Logger::~Logger() {
@@ -79,28 +79,23 @@ void Logger::vaPrint(const char* fmt, va_list args) {
             if (*fmt == 'i') {
                 int val = va_arg(args, int);
                 Serial.print(val);
-            }
-            else if (*fmt == 'c') {
-                char val = (char)va_arg(args, int);
+            } else if (*fmt == 'c') {
+                char val = (char) va_arg(args, int);
                 Serial.print(val);
-            }
-            else if (*fmt == 'f') {
+            } else if (*fmt == 'f') {
                 float val = va_arg(args, float);  // Not working!!!
                 // char buff[32];
                 // sprintf(buff, "%.*f", 3, val);
                 Serial.print(val);
-            }
-            else if (*fmt == 's') {
+            } else if (*fmt == 's') {
                 const char* val = va_arg(args, const char*);
                 Serial.print(val);
-            }
-            else if (*fmt == 'h') {
+            } else if (*fmt == 'h') {
                 int val = va_arg(args, int);
                 Serial.print("0x");
                 Serial.print(val, HEX);
             }
-        }
-        else {
+        } else {
             Serial.print(*fmt);
         }
         ++fmt;

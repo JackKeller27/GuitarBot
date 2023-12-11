@@ -1,8 +1,9 @@
+//
+// Created by Raghavasimhan Sankaranarayanan on 03/30/22.
+//
+
 #ifndef ERRORDEF_H
 #define ERRORDEF_H
-
-
-//Any errors needed/not needed?
 
 enum Error_t {
     kNoError = 0,

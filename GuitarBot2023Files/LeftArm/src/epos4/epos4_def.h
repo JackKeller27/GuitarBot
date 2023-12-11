@@ -40,7 +40,7 @@
 #define E_NOACCES           0x06010000      ///< Error code: Unsupported access to an object
 #define E_WRITEONLY         0x06010001      ///< Error code: Attempt to read a write-only object
 #define E_READONLY          0x06010002      ///< Error code: Attempt to write a read-only object
-#define E_SUBIDX_W          0x06010003      ///< Error code: Subindex cannot be written, subindex 0 must be “0” (zero) for write access
+#define E_SUBIDX_W          0x06010003      ///< Error code: Subindex cannot be written, subindex 0 must be â€œ0â€ (zero) for write access
 #define E_SDO_ACCESS        0x06010004      ///< Error code: The object cannot be accessed via complete access
 #define E_ONOTEX            0x06020000      ///< Error code: object does not exist
 #define E_PDOMAP            0x06040041      ///< Error code: The object cannot be mapped to the PDO
@@ -155,9 +155,10 @@ enum HomingStatus {
 };
 
 enum MotorSpec {
+    EC20,
     EC45,
     EC60
 };
-
+#define EC20_ENC_RES 1024
 #define EC45_ENC_RES 1024   // Pulses per Revolution
 #define EC60_ENC_RES 1024

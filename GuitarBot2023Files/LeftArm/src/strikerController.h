@@ -92,19 +92,19 @@ public:
 
     Striker::Command getStrikerMode(char mode) {
         switch (mode) {
-            case 's':
-                return Striker::Command::Normal;
-            case 't':
-                return Striker::Command::Tremolo;
-            case 'r':
-                return Striker::Command::Restart;
-            case 'q':
-                return Striker::Command::Quit;
-            case 'c':
-                return Striker::Command::Choreo;
-            default:
-                LOG_ERROR("unknown command : %i", mode);
-                return Striker::Command::Normal;
+        case 's':
+            return Striker::Command::Normal;
+        case 't':
+            return Striker::Command::Tremolo;
+        case 'r':
+            return Striker::Command::Restart;
+        case 'q':
+            return Striker::Command::Quit;
+        case 'c':
+            return Striker::Command::Choreo;
+        default:
+            LOG_ERROR("unknown command : %i", mode);
+            return Striker::Command::Normal;
         }
     }
 
@@ -130,49 +130,60 @@ public:
         uint8_t uiStrike = 0;
 
         switch (mode) {
-            case Striker::Command::Restart:
-                restart();
-                break;
+        case Striker::Command::Restart:
+            restart();
+            break;
 
-            case Striker::Command::Quit:
-                for (int i = 1; i < NUM_STRIKERS + 1; ++i) {
-                    m_striker[i].shutdown();
-                }
-                break;
+        case Striker::Command::Quit:
+            for (int i = 1; i < NUM_STRIKERS + 1; ++i) {
+                m_striker[i].shutdown();
+            }
+            break;
 
-            default:
-                for (int i = 1; i < NUM_STRIKERS + 1; ++i) {
-                    if (idCode & (1 << (i - 1))) {
-                        bool bStrike = m_striker[i].prepare(mode, midiVelocity, channelPressure);
-                        uiStrike += bStrike << (i - 1);
-                    }
+        default:
+            for (int i = 1; i < NUM_STRIKERS + 1; ++i) {
+                if (idCode & (1 << (i - 1))) {
+                    bool bStrike = m_striker[i].prepare(mode, midiVelocity, channelPressure);
+                    uiStrike += bStrike << (i - 1);
                 }
+            }
         }
 
         return uiStrike;
     }
 
     void executeCommand(uint8_t idCode, char mode, int midiVelocity, uint8_t channelPressure) {
-        switch (midiVelocity):
-        case 1:
-            midiVelocity =47;
-        case 2:
-            midiVelocity =32;
-        case 3:
-            midiVelocity =19;
-        case 4:
-            midiVelocity =5;
-        case 5:
-            midiVelocity =-5;
-        case 6:
-            midiVelocity =-18;
-        case 7:
-            midiVelocity =-28;
-        case 8:
-            midiVelocity =-38;
-        case 9:
-            midiVelocity =-50;
-        uint8_t uiStrike = prepare(idCode, mode, midiVelocity, channelPressure);
+        switch (midiVelocity) {
+            case 1:
+                midiVelocity = 47;
+                break;
+            case 2:
+                midiVelocity = 32;
+                break;
+            case 3:
+                midiVelocity = 19;
+                break;
+            case 4:
+                midiVelocity = 5;
+                break;
+            case 5:
+                midiVelocity = -5;
+                break;
+            case 6:
+                midiVelocity = -18;
+                break;
+            case 7:
+                midiVelocity = -28;
+                break;
+            case 8:
+                midiVelocity = -38;
+                break;
+            case 9:
+                midiVelocity = -50;
+                break;
+        }
+
+                    uint8_t uiStrike = prepare(idCode, mode, midiVelocity, channelPressure);
         strike(uiStrike);
     }
 

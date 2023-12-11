@@ -1,5 +1,5 @@
 //
-// 
+// Created by Raghavasimhan Sankaranarayanan on 11/26/21.
 // 
 
 #include "epos4.h"
@@ -22,6 +22,11 @@ int Epos4::init(int iNodeID, MotorSpec spec, bool inverted, unsigned long timeou
     err = shutdown();
 
     switch (spec) {
+    case EC20:
+        m_iEncoderResolution = EC20_ENC_RES;
+        err = configEC20();
+        break;
+
     case EC45:
         m_iEncoderResolution = EC45_ENC_RES;
         err = configEC45();
@@ -62,7 +67,7 @@ int Epos4::init(int iNodeID, MotorSpec spec, bool inverted, unsigned long timeou
         LOG_ERROR("status word err");
         return err;
     }
-    LOG_LOG("Status (%i): %h", (int)m_uiNodeID, (int)stat);
+    LOG_LOG("Status (%i): %h", (int) m_uiNodeID, (int) stat);
 
     // auto fw = firmwareVersion();
     // LOG_LOG("node %i fw version: %h", m_uiNodeID, fw);
@@ -73,7 +78,66 @@ void Epos4::reset() {
     setNMTState(NMTState::PreOperational);
     setEnable(false);
 }
+int Epos4::configEC20() {
+    int err;
+    // LOG_LOG("Configuring EC20");
+    err = setNominalCurrent(1310);
+    if (err != 0) {
+        LOG_ERROR("setNominalCurrent");
+        return err;
+    }
 
+    err = setOutputCurrentLimit(2620);
+    if (err != 0) {
+        LOG_ERROR("setOutputCurrentLimit");
+        return err;
+    }
+
+    err = setMotorTorqueConstant(5880); // uNm/A
+    if (err != 0) {
+        LOG_ERROR("setMotorTorqueConstant");
+        return err;
+    }
+
+    err = setThermalTimeConstantWinding(17); // x 0.1 s
+    if (err != 0) {
+        LOG_ERROR("setThermalTimeConstantWinding");
+        return err;
+    }
+
+    err = setNumPolePairs(4);
+    if (err != 0) {
+        LOG_ERROR("setNumPolePairs");
+        return err;
+    }
+
+    // Encoder
+    err = setEncoderNumPulses(m_iEncoderResolution);
+    if (err != 0) {
+        LOG_ERROR("setEncoderNumPulses");
+        return err;
+    }
+    // refer FW Spec 6.2.56.2 for type
+    err = setEncoderType(0x0);
+    if (err != 0) {
+        LOG_ERROR("setEncoderType");
+        return err;
+    }
+
+    err = setCurrentControlParameters();
+    if (err != 0) {
+        LOG_ERROR("setCurrentControlParameters");
+        return err;
+    }
+
+    err = setPositionControlParameters();
+    if (err != 0) {
+        LOG_ERROR("setPositionControlParameters");
+        return err;
+    }
+
+    return 0;
+}
 int Epos4::configEC45() {
     int err;
     // LOG_LOG("Configuring EC45");
@@ -237,7 +301,7 @@ int Epos4::readObj(_WORD index, _BYTE subIndex, _DWORD* answer) {
         return -1;
     }
 
-    *answer = (((int32_t)(m_rxMsg.data[7])) << 24) + (((int32_t)(m_rxMsg.data[6])) << 16) + (((int32_t)(m_rxMsg.data[5])) << 8) + (int32_t)(m_rxMsg.data[4]);
+    *answer = (((int32_t) (m_rxMsg.data[7])) << 24) + (((int32_t) (m_rxMsg.data[6])) << 16) + (((int32_t) (m_rxMsg.data[5])) << 8) + (int32_t) (m_rxMsg.data[4]);
 
     return 0;
 }
@@ -257,18 +321,19 @@ int Epos4::writeObj(_WORD index, _BYTE subIndex, _DWORD param) {
     m_txMsg.data[5] = (param & 0xFF00) >> 8;
     m_txMsg.data[6] = (param & 0xFF0000) >> 16;
     m_txMsg.data[7] = (param & 0xFF000000) >> 24;
+    //LOG_LOG("reached 1");
 
-    LOG_LOG("reached 1");
     int n = CanBus.writeMessage(&m_txMsg);
-    LOG_LOG("reached 2");
     if (n != 8) {
         LOG_ERROR("CanBus WriteMessage failed. Wrote %i bytes instead of %i bytes", 8);
         return -1;
     }
 
+    //LOG_LOG("reached 2");
+
     auto waitTime = millis();
     while (m_bSDOBusy) {
-        //LOG_LOG("sdo busy");
+        // LOG_LOG("sdo busy");
         delay(1);
         if (m_ulTimeout_ms > 0 && ((millis() - waitTime) > m_ulTimeout_ms)) {
             return -2;
@@ -277,7 +342,6 @@ int Epos4::writeObj(_WORD index, _BYTE subIndex, _DWORD param) {
 
     /* check for error code */
     if (m_rxMsg.data[0] == 0x80) {
-        //LOG_LOG("Paramater %i", param);
         m_uiError = (m_rxMsg.data[7] << 24) + (m_rxMsg.data[6] << 16) + (m_rxMsg.data[5] << 8) + (m_rxMsg.data[4]);
         LOG_ERROR("Device Error: %h", m_uiError);
         return -1;
@@ -366,7 +430,7 @@ int Epos4::getActualPosition(int32_t* piPos) {
         return -1;
     }
 
-    LOG_TRACE("Position: %i", (int)ret);
+    LOG_TRACE("Position: %i", (int) ret);
     *piPos = ret;
 
     return 0;
@@ -383,7 +447,7 @@ HomingStatus Epos4::getHomingStatus() {
         LOG_ERROR("readStatusWord");
         return Error;
     }
-    //LOG_LOG("homing status: %h", stat);
+    // LOG_LOG("homing status: %h", stat);
 
     if (stat & (1 << 13)) {
         LOG_ERROR("Homing error");
@@ -445,7 +509,7 @@ char* Epos4::getOpModeString(OpMode mode) const {
 
 int Epos4::setOpMode(OpMode opMode, uint8_t uiInterpolationTime, int8_t iInterpolationIndex, HomingMethod homingMethod) {
     int n;
-    n = writeObj(MODE_OF_OPERATION_ADDR, 0x0, (uint8_t)opMode);
+    n = writeObj(MODE_OF_OPERATION_ADDR, 0x0, (uint8_t) opMode);
     if (n != 0) {
         LOG_ERROR("Write Obj failed. Error code: ", m_uiError);
         return -1;
@@ -471,16 +535,29 @@ int Epos4::setOpMode(OpMode opMode, uint8_t uiInterpolationTime, int8_t iInterpo
 
     case Homing:
         n = setHomingMethod(homingMethod);
-            if (n != 0) {
-                LOG_ERROR("setHomingMethod");
-                return -1;
-            }
+        if (n != 0) {
+            LOG_ERROR("setHomingMethod");
+            return -1;
+        }
+        n = SetHomeOffset(150);
+        if(n != 0 ) {
+            LOG_ERROR("setHomeOffset");
+            return -1;
+        }
 
-            n = setHomingCurrentThreshold(2000);
-            if (n != 0) {
-                LOG_ERROR("setHomingCurrentThreshold");
-                return -1;
-            }
+//        n = SetHomePosition(1000);
+//        if(n != 0 ) {
+//            LOG_ERROR("setHomePosition");
+//            return -1;
+//        }
+
+        n = setHomingCurrentThreshold(2000);
+        if (n != 0) {
+            LOG_ERROR("setHomingCurrentThreshold");
+            return -1;
+        }
+
+
 
         break;
 
@@ -692,40 +769,9 @@ int Epos4::setProfile(_DWORD vel, _DWORD acc) {
     }
 }
 
-
-
-int Epos4::setDigitalInputsLogicState(uint16_t state) {
-    return writeObj(0x3141, 0x01, (uint16_t)state);
-}
-int Epos4::setDigitalInputsPolarity(uint16_t polarity) {
-    return writeObj(0x3141, 0x02, (uint16_t)polarity);
-}
 int Epos4::setHomingMethod(HomingMethod method) {
-    return writeObj(0x6098, 0x00, (uint8_t)method);
+    return writeObj(0x6098, 0x00, (uint8_t) method);
 }
-int Epos4::setHomingAcceleration(uint32_t acc){
-    return writeObj(0x609A, 0x00, (uint32_t)acc);
-}
-int Epos4::setHomingSpeedSwitchSearch(uint32_t speed){
-    return writeObj(0x6099, 0x01, (uint32_t)speed);
-}
-int Epos4::setHomingSpeedZeroSearch(uint32_t speed){
-    return writeObj(0x6099, 0x02, (uint32_t)speed);
-}
-int Epos4::setHomingOffset(uint32_t offset){
-    return writeObj(0x30B1, 0x00, (uint32_t)offset);
-}
-int Epos4::setHomePosition(uint32_t pos){
-    return writeObj(0x30B0, 0x00, (uint32_t)pos);
-}
-int Epos4::setMotionProfileType(uint16_t type) {
-    return writeObj(0x6086, 0x00, (uint16_t)type);
-}
-
-
-
-
-
 
 int Epos4::setHomingCurrentThreshold(_WORD currentThreshold) {
     return writeObj(0x30B2, 0x0, currentThreshold);
@@ -831,9 +877,24 @@ int Epos4::startHoming() {
     return setControlWord(0x001F);
 }
 
+int Epos4::SetHomeOffset(int32_t iPos) {
+    int n;
+    iPos *= m_iDirMultiplier;
+
+    n = writeObj(0x30B1, 0x00, iPos);
+    if (n != 0) {
+        LOG_ERROR("Write Obj failed. Error code: ", m_uiError);
+        return -1;
+    }
+    m_iEncoderPosition = iPos;
+    return 0;
+
+}
+
+
 int Epos4::SetHomePosition(int32_t iPos) {
     int n;
-
+//    LOG_LOG("Setting Home Position");
     iPos *= m_iDirMultiplier;
 
     n = writeObj(0x30B0, 0x00, iPos);
@@ -889,7 +950,7 @@ int Epos4::setCurrentControlParameters_EC60() {
 
 int Epos4::setPositionControlParameters() {
     int n;
-    n = writeObj(POS_CTRL_PARAM_ADDR, PC_P_GAIN, 3303872);
+    n = writeObj(POS_CTRL_PARAM_ADDR, PC_P_GAIN, 825968);
     if (n != 0) {
         LOG_ERROR("Write Obj failed. Error code: ", m_uiError);
         return -1;
@@ -902,13 +963,13 @@ int Epos4::setPositionControlParameters() {
         return -1;
     }
 
-    n = writeObj(POS_CTRL_PARAM_ADDR, PC_I_GAIN, 11508462);
+    n = writeObj(POS_CTRL_PARAM_ADDR, PC_I_GAIN, 1438557);
     if (n != 0) {
         LOG_ERROR("Write Obj failed. Error code: ", m_uiError);
         return -1;
     }
 
-    n = writeObj(POS_CTRL_PARAM_ADDR, PC_D_GAIN, 79040);
+    n = writeObj(POS_CTRL_PARAM_ADDR, PC_D_GAIN, 39520);
     if (n != 0) {
         LOG_ERROR("Write Obj failed. Error code: ", m_uiError);
         return -1;
@@ -975,7 +1036,7 @@ int Epos4::setNMTState(NMTState nmtState) {
     m_txMsg.id = 0x0;
     m_txMsg.length = 2;
     m_txMsg.format = CAN_STD_FORMAT;
-    m_txMsg.data[0] = (uint8_t)nmtState;
+    m_txMsg.data[0] = (uint8_t) nmtState;
     m_txMsg.data[1] = m_uiNodeID;
 
     int n = CanBus.writeMessage(&m_txMsg);
@@ -1040,19 +1101,19 @@ int Epos4::PDO_configRPDO3() {
 
     /*
     To be able to change the PDO mapping, the following procedure must be performed:
-    a) Write the value �0� (zero) to subindex 0x00 (disable PDO).
-    b) Modify the desired objects in subindex 0x01�0x0n.
+    a) Write the value “0” (zero) to subindex 0x00 (disable PDO).
+    b) Modify the desired objects in subindex 0x01…0x0n.
     c) Write the desired number of mapped objects to subindex 0x00.
     */
 
-    // // Write the value �0� (zero) to subindex 0x00 (disable PDO).
+    // // Write the value “0” (zero) to subindex 0x00 (disable PDO).
     // err = writeObj(0x1602, 0x00, 0);
     // if (err != 0) {
     //     LOG_ERROR("write zero to 0x00 failed for RPDO3. Error code: %h", m_uiError);
     //     return err;
     // }
 
-    // // Modify the desired objects in subindex 0x01�0x0n.
+    // // Modify the desired objects in subindex 0x01…0x0n.
     // err = writeObj(0x1602, 0x01, 0x60400010);   // Controlword
     // if (err != 0) {
     //     LOG_ERROR("write to 0x01 failed for RPDO3. Error code: %h", m_uiError);
@@ -1094,19 +1155,19 @@ int Epos4::PDO_configRPDO4() {
 
     /*
     To be able to change the PDO mapping, the following procedure must be performed:
-    a) Write the value �0� (zero) to subindex 0x00 (disable PDO).
-    b) Modify the desired objects in subindex 0x01�0x0n.
+    a) Write the value “0” (zero) to subindex 0x00 (disable PDO).
+    b) Modify the desired objects in subindex 0x01…0x0n.
     c) Write the desired number of mapped objects to subindex 0x00.
     */
 
-    // // Write the value �0� (zero) to subindex 0x00 (disable PDO).
+    // // Write the value “0” (zero) to subindex 0x00 (disable PDO).
     // err = writeObj(0x1603, 0x00, 0);
     // if (err != 0) {
     //     LOG_ERROR("write zero to 0x00 failed for RPDO4. Error code: %h", m_uiError);
     //     return err;
     // }
 
-    // // Modify the desired objects in subindex 0x01�0x0n.
+    // // Modify the desired objects in subindex 0x01…0x0n.
     // err = writeObj(0x1603, 0x01, 0x60810020);   // Velocity
     // if (err != 0) {
     //     LOG_ERROR("write to 0x01 failed for RPDO4. Error code: %h", m_uiError);
@@ -1183,10 +1244,10 @@ int Epos4::PDO_setPosition(int32_t position) {
     m_txMsg.length = 6;
     m_txMsg.data[0] = LSB;  // cw set to enable and switch on. Clear fault if present
     m_txMsg.data[1] = 0x0;
-    m_txMsg.data[2] = (uint8_t)(position & 0xFF);
-    m_txMsg.data[3] = (uint8_t)((position >> 8) & 0xFF);
-    m_txMsg.data[4] = (uint8_t)((position >> 16) & 0xFF);
-    m_txMsg.data[5] = (uint8_t)((position >> 24) & 0xFF);
+    m_txMsg.data[2] = (uint8_t) (position & 0xFF);
+    m_txMsg.data[3] = (uint8_t) ((position >> 8) & 0xFF);
+    m_txMsg.data[4] = (uint8_t) ((position >> 16) & 0xFF);
+    m_txMsg.data[5] = (uint8_t) ((position >> 24) & 0xFF);
     int n = CanBus.writeMessage(&m_txMsg);
 
     if (n != m_txMsg.length) {
@@ -1214,10 +1275,10 @@ int Epos4::PDO_setVelocity(int32_t iVelocity) {
     m_txMsg.length = 6;
     m_txMsg.data[0] = LSB;  // cw set to enable and switch on. Clear fault if present
     m_txMsg.data[1] = 0x0;
-    m_txMsg.data[2] = (uint8_t)(iVelocity & 0xFF);
-    m_txMsg.data[3] = (uint8_t)((iVelocity >> 8) & 0xFF);
-    m_txMsg.data[4] = (uint8_t)((iVelocity >> 16) & 0xFF);
-    m_txMsg.data[5] = (uint8_t)((iVelocity >> 24) & 0xFF);
+    m_txMsg.data[2] = (uint8_t) (iVelocity & 0xFF);
+    m_txMsg.data[3] = (uint8_t) ((iVelocity >> 8) & 0xFF);
+    m_txMsg.data[4] = (uint8_t) ((iVelocity >> 16) & 0xFF);
+    m_txMsg.data[5] = (uint8_t) ((iVelocity >> 24) & 0xFF);
     int n = CanBus.writeMessage(&m_txMsg);
 
     if (n != m_txMsg.length) {

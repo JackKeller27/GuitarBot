@@ -1,5 +1,5 @@
 //
-//
+// Created by Raghavasimhan Sankaranarayanan on 03/30/22.
 //
 
 #ifndef UTIL_H
@@ -17,6 +17,7 @@ namespace Util {
         }
     }
 
+    // Refer: https://cs.gmu.edu/~kosecka/cs685/cs685-trajectories.pdf
     static void interpWithBlend(float q0, float qf, int32_t N, float tb_cent, float* curve) {
         if (!curve)
             return;

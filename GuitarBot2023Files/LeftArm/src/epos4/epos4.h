@@ -1,3 +1,5 @@
+//
+// Created by Raghavasimhan Sankaranarayanan on 11/26/21.
 // 
 // Maxon EPOS4 library for STM32F7 based Robotis OpenCR1.0 controller board.
 // Based on libEPOS_STM32 Liyu Wang, SJTU repo for epos2
@@ -46,6 +48,7 @@ public:
     int init(int iNodeID = 1, MotorSpec spec = EC45, bool inverted = false, unsigned long timeout_ms = 0);
     void reset();
 
+    int configEC20();
     int configEC45();
     int configEC60();
 
@@ -73,24 +76,13 @@ public:
     char* getOpModeString(OpMode mode) const;
 
     // Write
-    int setOpMode(OpMode opMode, uint8_t uiInterpolationTime = PDO_RATE, int8_t iInterpolationIndex = -3, HomingMethod homingMethod = CurrentThresholdPositive);
+    int setOpMode(OpMode opMode, uint8_t uiInterpolationTime = PDO_RATE, int8_t iInterpolationIndex = -3, HomingMethod homingMethod =CurrentThresholdNegative);
 
     int setControlWord(_WORD cw);
     int shutdown();
     int setEnable(bool bEnable = true);
     int setProfile(_DWORD vel = 1000, _DWORD acc = 10000);
-
-    int setDigitalInputsLogicState(uint16_t state);
-    int setDigitalInputsPolarity(uint16_t polarity);
-
     int setHomingMethod(HomingMethod method);
-    int setHomingAcceleration(uint32_t acc);
-    int setHomingSpeedSwitchSearch(uint32_t speed);
-    int setHomingSpeedZeroSearch(uint32_t speed);
-    int setHomingOffset(uint32_t offset);
-    int setMotionProfileType(uint16_t type);
-    int setHomePosition(uint32_t offset);
-
     int setHomingCurrentThreshold(_WORD currentThreshold);
     int moveToPosition(int32_t pos, bool bWait = true);
     int rotate(float fAngle, bool bRadian = true, bool bWait = true);
@@ -98,7 +90,8 @@ public:
     int setFollowErrorWindow(_DWORD errWindow);
     int quickStop();
     int startHoming();
-    int SetHomePosition(int32_t iPos = 0);
+    int SetHomePosition(int32_t iPos);
+    int SetHomeOffset(int32_t iPos);
     int clearFault();
 
     int setCurrentControlParameters();
