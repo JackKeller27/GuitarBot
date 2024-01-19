@@ -70,10 +70,17 @@ def chord_name_to_MIDI(chord_name, subdivisions, is_downstrum):
             open_note += PERFECT_FOURTH
         else:
             open_note += MAJOR_THIRD
-
-    if is_downstrum:
-        MIDI_note_ons.reverse() # not sure this will actually help, but worth a shot?
+        
+    if not is_downstrum:
+        for i in range(3, 6):
+            MIDI_note_ons[i].velocity = 70 # decrease bass note volume
+        
+        MIDI_note_ons.reverse() # reverse order of notes to mimic upstrum (high e comes first)
         MIDI_note_offs.reverse()
+    
+    else:
+        for i in range(0, 3):
+            MIDI_note_ons[i].velocity = 90 # up bass note volume
 
     return MIDI_note_ons, MIDI_note_offs
 
