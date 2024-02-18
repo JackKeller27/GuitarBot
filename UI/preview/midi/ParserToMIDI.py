@@ -1,7 +1,13 @@
+import pandas as pd
+
 from mido import Message
 from UI.constants.ChordsDict import chords, sharp_to_flat
+from UI.preview.midi.chord_fingerings.viterbi import flatten, get_fingerings, initialize_viterbi, terminate_viterbi
 
 MAJOR_THIRD, PERFECT_FOURTH = 4, 5
+
+all_chords = pd.read_csv('all_chords_9frets.csv')
+human_chords = pd.read_csv('humanPlayable_9frets.csv')
 
 # Given a position, seeks to the next strum
 def get_next_chord_strum(left_arm, right_arm, bpm, subdiv_per_beat, measure_idx, subdiv_idx, curr_chord_name):
@@ -80,9 +86,8 @@ def arms_to_MIDI(left_arm, right_arm, bpm, subdiv_per_beat):
 
     return MIDI_song
 
-# Takes in tab and timing information, mapping inputs to MIDI.
-###        chord: name of chord
-### subdivisions: number of eigth notes chord rings
+# Resolves a chord name to a chord voicing (in tab), and maps it to MIDI.
+###   chord_name: name of chord, i.e., A (for A major)
 ### is_downstrum: true if downstrum, false if upstrum
 def chord_name_to_MIDI(chord_name, is_downstrum):
     MIDI_note_ons, MIDI_note_offs = [], []
@@ -93,20 +98,29 @@ def chord_name_to_MIDI(chord_name, is_downstrum):
         chord_name = sharp_to_flat[chord_name[:2]] + ('' if len(chord_name) < 3 else chord_name[2:])
 
     chord_tab = chords[chord_name] # list of ints in tab notation where 6th string, low bass, comes first
+    # chord_tab = chord_name_to_tab(chord_name) # naive integration, runtime optimization possible
 
-    string_idx = 7
+    string_idx = 6
     # TODO: velocity, or loudness, should vary by note to correspond with upstrum/downstrum?
     # should emphasize 1 and 3 beats in 4/4?
     for fret_number_of_note in chord_tab:
-        string_idx -= 1
         if fret_number_of_note == 'X' or fret_number_of_note == 'x': 
             continue
-        MIDI_note_ons.append(Message("note_on", note=open_note+fret_number_of_note, velocity=80, channel=0).bytes()) # default velocity is 64
+
+        note_volume = 80
+        if string_idx >= 4:
+            if is_downstrum:
+                note_volume += 10
+            else:
+                note_volume -= 10
+
+        MIDI_note_ons.append(Message("note_on", note=open_note+fret_number_of_note, velocity=note_volume, channel=0).bytes()) # default velocity is 64
         MIDI_note_offs.append(Message("note_off", note=open_note+fret_number_of_note, channel=0).bytes()) # removed duration, doesn't work w/ VST?
-        if string_idx != 3:
+        if string_idx != 3: # tempered for standard tuning
             open_note += PERFECT_FOURTH
         else:
             open_note += MAJOR_THIRD
+        string_idx -= 1
 
     if not is_downstrum: # upstrum
         MIDI_note_ons.reverse() # reverse order of notes to mimic upstrum (high e comes first)
@@ -114,32 +128,12 @@ def chord_name_to_MIDI(chord_name, is_downstrum):
 
     return MIDI_note_ons, MIDI_note_offs
 
+# Unit that maps a chord name to tab using Saksham's viterbi
+def chord_name_to_tab(chord_name):
+    num_fingerings = -1
+    num_chords = -1
 
-# Each interval "constant" holds the appropriate offset
-# MINOR_FIRST, FIRST, MINOR_SECOND, MINOR_THIRD, MAJOR_THIRD = 1, 2, 3, 4, 5
-# PERFECT_FOURTH, PERFECT_FIFTH, MINOR_SIXTH, MAJOR_SIXTH = 6, 7, 8, 9
-# MINOR_SEVENTH, MAJOR_SEVENTH, OCTAVE = 10, 11, 12
-# Function that returns an E major shape MIDI voicing of the given chord formatted in a MIDO message.
-### chord: chord name, 
-### eightNotes: number of eigth notes chord rings
-### tempo: BPM it is played in
-### NOTE: Assumes chord is not an inversion, logic can be adjusted later to check for / char
-# def barre_chord(chord, eightNotes, tempo):
-#     rootNoteNum = ord(chord[0]) - 29 # uppercase ASCII -> MIDI bass note
-#     offsetIfMinor = -1 if (len(chord) > 1 and chord[1] == 'm') else 0
-#     duration = eightNotes * 30/tempo
-#     if (rootNoteNum < 40): # ensures no dips below standard tuning E2 limit
-#         rootNoteNum += OCTAVE
-#     # TODO: adjust velocity to scale with duration?
-#     return [Message("note_on", note=rootNoteNum, velocity=80, channel=0),
-#             Message("note_on", note=rootNoteNum+PERFECT_FIFTH, velocity=80, channel=0),
-#             Message("note_on", note=rootNoteNum+OCTAVE, velocity=80, channel=0),
-#             Message("note_on", note=rootNoteNum+OCTAVE+MAJOR_THIRD+offsetIfMinor, velocity=80, channel=0),
-#             Message("note_on", note=rootNoteNum+OCTAVE+PERFECT_FIFTH, velocity=80, channel=0),
-#             Message("note_on", note=rootNoteNum+2*OCTAVE, velocity=80, channel=0),
-#                 Message("note_off", note=rootNoteNum, time=duration, channel=0),
-#                 Message("note_off", note=rootNoteNum+PERFECT_FIFTH, time=duration, channel=0),
-#                 Message("note_off", note=rootNoteNum+OCTAVE, time=duration, channel=0),
-#                 Message("note_off", note=rootNoteNum+OCTAVE+MAJOR_THIRD+offsetIfMinor, time=duration, channel=0),
-#                 Message("note_off", note=rootNoteNum+OCTAVE+PERFECT_FIFTH, time=duration, channel=0),
-#                 Message("note_off", note=rootNoteNum+2*OCTAVE, time=duration, channel=0)]
+    viterbi, back_pointer = initialize_viterbi(num_fingerings, num_chords)
+
+    # chord_progression = flatten(left_arm)
+    terminate_viterbi(viterbi)

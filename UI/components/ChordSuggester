@@ -1,0 +1,119 @@
+# https://www.chordfiles.com/product/chord_files-progressions/
+MAJOR_SECOND, MINOR_THIRD, MAJOR_THIRD, PERFECT_FOURTH, PERFECT_FIFTH = 2, 3, 4, 5, 7
+MAJOR_SIXTH, MAJOR_SEVENTH = 9, 11
+
+ROOT_NOTES = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#']
+
+numeral_offset = {
+    'I'  : 0,
+    'II' : MAJOR_SECOND,
+    'III': MAJOR_THIRD,
+    'IV' : PERFECT_FOURTH,
+    'V'  : PERFECT_FIFTH,
+    'VI' : MAJOR_SIXTH,
+    'VII': MAJOR_SEVENTH
+}
+
+offset_numeral = {
+    0              : 'I',
+    MAJOR_SECOND   : 'II',
+    MAJOR_THIRD    : 'III',
+    PERFECT_FOURTH : 'IV',
+    PERFECT_FIFTH  : 'V',
+    MAJOR_SIXTH    : 'VI',
+    MAJOR_SEVENTH  : 'VII'
+}
+
+# Gets corresponding index in ROOT_NOTES list
+def get_root_idx(root_note):
+    root_note_idx = -1
+    for i in range(0, len(ROOT_NOTES)):
+        if ROOT_NOTES[i] == root_note:
+            root_note_idx = i
+            break
+
+    return root_note_idx
+
+# Takes in a key, returns diatonic chords with major/minor quality
+## key: tuple of the form (root_note, tonality)
+## chord: name of chord
+def get_diatonic_chords(key):
+    main_chords = []
+    
+    root_note, tonality = key[0].upper(), key[1].lower()
+
+    root_note_idx = get_root_idx(root_note)
+    if root_note_idx == -1:
+        return main_chords # returns empty list on bad input
+    
+    if tonality == "minor":
+        root_note_idx = root_note_idx + MINOR_THIRD # A minor -> C major, for example
+
+    main_chords.append(ROOT_NOTES[root_note_idx % 12])
+    main_chords.append(ROOT_NOTES[(root_note_idx + MAJOR_SECOND) % 12] + 'm')
+    main_chords.append(ROOT_NOTES[(root_note_idx + MAJOR_THIRD) % 12] + 'm')
+    main_chords.append(ROOT_NOTES[(root_note_idx + PERFECT_FOURTH) % 12])
+    main_chords.append(ROOT_NOTES[(root_note_idx + PERFECT_FIFTH) % 12])
+    main_chords.append(ROOT_NOTES[(root_note_idx + MAJOR_SIXTH) % 12] + 'm')
+    main_chords.append(ROOT_NOTES[(root_note_idx + MAJOR_SEVENTH) % 12] + 'm')
+
+    if tonality == "minor":
+        main_chords = main_chords[5:] + main_chords[:5] # Reorders to the correct root for minor key
+
+    return main_chords
+
+# Takes in the root of a key and chord progression formatted as Roman numerals, returns a chord progression with full names
+def roman_to_chords(root_note, numeral_progression):
+    chord_progression = []
+
+    root_note_idx = get_root_idx(root_note)
+
+    for numeral in numeral_progression:
+        if numeral.isupper():
+            chord_progression.append(ROOT_NOTES[(root_note_idx + numeral_offset[numeral]) % 12])
+        else:
+            chord_progression.append(ROOT_NOTES[(root_note_idx + numeral_offset[numeral.upper()]) % 12] + 'm')
+    
+    return chord_progression
+
+# Takes in the root of a key and chord progression formatted as chord names, returns a Roman numeral progression
+def chords_to_roman(root_note, chord_progression):
+    numeral_progression = []
+    root_note_idx = get_root_idx(root_note)
+
+    for chord in chord_progression:
+        curr_idx = 0 # declaring for later
+        if len(chord) > 1 and chord[1] != 'm':
+            curr_idx = get_root_idx(chord[:2])
+        else:
+            curr_idx = get_root_idx(chord[0])
+
+        diff = curr_idx - root_note_idx
+        if diff < 0:
+            diff += 12 # wrong for wraparound
+
+        numeral = '' # declaring for later
+        if chord[len(chord) - 1] == 'm':
+            numeral = offset_numeral[diff].lower()
+        else:
+            numeral = offset_numeral[diff].upper()
+
+        numeral_progression.append(numeral)
+
+    return numeral_progression
+
+def demo():
+    key = input('Pick a key: ')
+    key = (key.split(' ')[0], key.split(' ')[1])
+
+    print(get_diatonic_chords(key), '\n')
+
+    numeral_progression = input('Input a Roman Numeral progression:\n\t').split()
+    
+    print('\t', ' '.join(roman_to_chords(key[0], numeral_progression)))
+
+    chord_progression = input('Input a chord progression:\n\t').split()
+    
+    print('\t', ' '.join(chords_to_roman(key[0], chord_progression)))
+
+demo()
