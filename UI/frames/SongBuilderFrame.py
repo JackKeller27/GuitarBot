@@ -1,7 +1,7 @@
 import customtkinter as ctk
 import tkinter as tk
-from vis_entities.DraggableSectionLabel import DraggableSectionLabel
-from frames.SongBuilderDragAndDropFrame import SongBuilderDragAndDropFrame
+from UI.vis_entities.DraggableSectionLabel import DraggableSectionLabel
+from UI.frames.SongBuilderDragAndDropFrame import SongBuilderDragAndDropFrame
 
 class SongBuilderFrame(ctk.CTkScrollableFrame):
     def __init__(self, master, width, height):

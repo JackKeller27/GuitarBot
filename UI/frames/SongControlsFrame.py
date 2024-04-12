@@ -1,9 +1,9 @@
 import tkinter as tk
 import tkinter.ttk as ttk
 import customtkinter as ctk
-from constants.time_signatures import time_signature_options
-from constants.chord_modes import chord_mode_options
-from constants.bot_specs import MIN_BPM, MAX_BPM, DEFAULT_BPM
+from UI.constants.time_signatures import time_signature_options
+from UI.constants.chord_modes import chord_mode_options
+from UI.constants.bot_specs import MIN_BPM, MAX_BPM, DEFAULT_BPM
 from PIL import Image
 
 class SongControlsFrame(tk.Frame):
@@ -53,13 +53,13 @@ class SongControlsFrame(tk.Frame):
         self.send_btn.grid(row=1, column=5, sticky='W')
 
         # Preview audio icon button
-        img = Image.open('UI/icons/preview-audio-24px.png')
+        img = Image.open('/home/codmusic/newGuitarBot/GuitarBot/UI/icons/preview-audio-24px.png')
         self.preview_icon = ctk.CTkImage(img, size=(24, 24)) # this must be an instance variable so python doesn't garbage collect it
         self.preview_btn = ctk.CTkButton(self, image=self.preview_icon, width=0, border_width=0, border_spacing=0, text='', fg_color='transparent')
         self.preview_btn.grid(row=0, column=6, sticky='W')
 
         # Help icon button
-        img = Image.open('UI/icons/help-24px.png')
+        img = Image.open('/home/codmusic/newGuitarBot/GuitarBot/UI/icons/help-24px.png')
         self.help_icon = ctk.CTkImage(img, size=(24, 24)) # this must be an instance variable so python doesn't garbage collect it
         self.help_btn = ctk.CTkButton(self, image=self.help_icon, width=0, border_width=0, border_spacing=0, text='', fg_color='transparent')
         self.help_btn.grid(row=1, column=6, sticky='W')

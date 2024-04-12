@@ -129,7 +129,7 @@ class DraggableSectionLabel:
         if canvas is None:
             return
         label = tkinter.Label(canvas, textvariable=self.name,
-                              borderwidth=2, relief="raised", bg='navy blue', width=6, cursor='hand')
+                              borderwidth=2, relief="raised", bg='navy blue', width=6, cursor='arrow')
         id = canvas.create_window(x, self.mid_height_y, window=label, anchor="nw")
         self.canvas = canvas
         self.label = label

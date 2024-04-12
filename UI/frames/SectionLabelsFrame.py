@@ -27,12 +27,12 @@ class SectionLabelsFrame(tk.Frame):
         self.name_entry.grid(row=0, column=0, columnspan=2)
 
         # trash, eraser icon buttons
-        img = Image.open('UI/icons/trash-16px.png')
+        img = Image.open('/home/codmusic/newGuitarBot/GuitarBot/UI/icons/trash-16px.png')
         self.trash_icon = ctk.CTkImage(img, size=(16, 16)) # this must be an instance variable so python doesn't garbage collect it
         self.trash_btn = ctk.CTkButton(self, image=self.trash_icon, width=0, border_width=0, border_spacing=0, text='', fg_color='transparent')
         self.trash_btn.grid(row=1, column=0)
 
-        img = Image.open('UI/icons/eraser-16px.png')
+        img = Image.open('/home/codmusic/newGuitarBot/GuitarBot/UI/icons/eraser-16px.png')
         self.eraser_icon = ctk.CTkImage(img, size=(16, 16)) # this must be an instance variable so python doesn't garbage collect it
         self.eraser_btn = ctk.CTkButton(self, image=self.eraser_icon, width=0, border_width=0, border_spacing=0, text='', fg_color='transparent')
         self.eraser_btn.grid(row=1, column=1)
