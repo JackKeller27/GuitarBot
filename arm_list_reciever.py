@@ -1,15 +1,25 @@
 import socket
+<<<<<<< Updated upstream:arm_list_reciever.py
+=======
+import time
+
+import RobotControllerAmit
+>>>>>>> Stashed changes:arm_list_receiver.py
 from ast import literal_eval
 from parsing.ArmListParser import ArmListParser
 import RobotControllerAmit
 
 socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+<<<<<<< Updated upstream:arm_list_reciever.py
 udp_ip = "127.0.0.1" #UDP_IP
 udp_port = 40012 #UDP_PORT
 left_arm_header = "l_arm_guitar"
 right_arm_header = "r_arm_guitar"
 measure_time_header = "measure_time_guitar"
 
+=======
+time.sleep(1)
+>>>>>>> Stashed changes:arm_list_receiver.py
 socket.bind((udp_ip, udp_port))
 
 left_arm = None

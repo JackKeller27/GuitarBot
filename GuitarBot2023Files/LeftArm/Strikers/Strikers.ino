@@ -32,13 +32,6 @@ void setup() {
     delay(2000);
     pController->start();
     delay(2000);
-    pController->executeCommand(1, 's', 5, 50);
-    pController->executeCommand(2, 's', 5, 50);
-    pController->executeCommand(3, 's', 5, 50);
-    pController->executeCommand(4, 's', 5, 50);
-    pController->executeCommand(5, 's', 5, 50);
-    pController->executeCommand(6, 's', 5, 50);
-    delay(2000);
     
     LOG_LOG("Listening for commands...");   // "in format (ascii characters) <mode><id code><midi velocity>"
 }
@@ -61,37 +54,39 @@ void loop() {
         stringComplete = false;
         //Unpress
 
-        for(int i = 7; i < 13; i++){
-          pController->executePress(i, -1);
-        }
-        //Slide
-        for(int i = 0; i < 6; i++) {
-          pController->executeCommand(i+1, 's', fret[i], 50);
-          if(i == 3){
-              delay(75);
-          }
-        }
-        delay(75);
-        //Press/Mute/Open
-        for(int i = 7; i < 13; i++){
-          switch(playcommand[i]) {
-            case 1:
-            pController->executePress(i, -1);
-            LOG_LOG("open on %i", i);
-            break;
-            case 2:
-            pController->executePress(i, 400);
-            LOG_LOG("press on %i", i);
-            break;
-            case 3:
-            pController->executePress(i, 50);
-            LOG_LOG("mute on %i", i);
-            break;
-            default:
-            pController->executePress(i, 0);
-            LOG_LOG("passthrough press");
-          }
-        }
+//        for(int i = 7; i < 13; i++){
+//          pController->executePress(i, -1);
+//        }
+//        //Slide
+//        for(int i = 0; i < 6; i++) {
+//          pController->executeCommand(i+1, 's', fret[i], 50);
+//          if(i == 3){
+//              delay(75);
+//          }
+//        }
+//        delay(75);
+//        //Press/Mute/Open
+//        for(int i = 7; i < 13; i++){
+//          switch(playcommand[i]) {
+//            case 1:
+//            pController->executePress(i, -1);
+//            LOG_LOG("open on %i", i);
+//            break;
+//            case 2:
+//            pController->executePress(i, 400);
+//            LOG_LOG("press on %i", i);
+//            break;
+//            case 3:
+//            pController->executePress(i, 50);
+//            LOG_LOG("mute on %i", i);
+//            break;
+//            default:
+//            pController->executePress(i, 0);
+//            LOG_LOG("passthrough press");
+//          }
+//        }
+
+        pController->executeSlide(fret[0], fret[1], fret[2], fret[3], fret[4], fret[5], 0, 0);
 
         if (err == kNoError) {
           LOG_LOG("playcommand 1: %i, playcommand 2: %i, playcommand 3: %i, playcommand 4: %i, playcommand 5: %i, playcommand 6: %i", playcommand[0], playcommand[1], playcommand[2], playcommand[3], playcommand[4], playcommand[5]);

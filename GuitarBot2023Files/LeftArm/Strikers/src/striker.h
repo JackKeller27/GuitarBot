@@ -10,9 +10,12 @@
 #include "util.h"
 #include "ErrorDef.h"
 
-
 class Striker {
 public:
+    using strikerFunctionCallbackType = int (Striker::*)(int);
+    int (Striker::* pPresserCallBackPointer)(int) = &Striker::press;
+    Striker* presserPointer = nullptr;
+
     enum class Command {
         Normal,
         Tremolo,
@@ -22,9 +25,11 @@ public:
         Choreo
     };
 
+
     ~Striker() {
         reset();
     }
+
 
     Error_t init(int iNodeId, MotorSpec spec) {
         LOG_LOG("%i", iNodeId);
@@ -34,6 +39,8 @@ public:
             return kSetValueError;
         }
 
+
+
         m_iCurrentIdx = kTotalPoints;
         m_mode = Command::Restart;
         if (spec==EC45) {
@@ -41,18 +48,34 @@ public:
             Error_t e = home(iNodeId);
             if (e != kNoError) return e;
         }
+        if (spec==EC20) {
+            LOG_LOG("Start Homing");
+            Error_t e = home(iNodeId);
+            if (e != kNoError) return e;
+        }
         stopStrike();
 
         m_bInitialized = true;
-        Serial.println(m_afTraj[0]);
-        Serial.println(m_afTraj[1]);
-        Serial.println(m_afTraj[2]);
-        Serial.println(m_afTraj[3]);
+//        Serial.println(m_afTraj[0]);
+//        Serial.println(m_afTraj[1]);
+//        Serial.println(m_afTraj[2]);
+//        Serial.println(m_afTraj[3]);
 
         LOG_LOG("init passed for %i", iNodeId);
 
         return kNoError;
     }
+    float getPosition(){
+        return epos.getCurrentPosition_deg();
+    }
+    float getPosition_ticks(){
+        return epos.getCurrentPosition_ticks();
+    }
+
+    void rotate(int pos){
+        epos.PDO_setPosition(pos);
+    }
+
 
     void reset() {
         epos.reset();
@@ -66,7 +89,7 @@ public:
 //        return prepToGoHome();
         // Added Homing compatible w/ epos
         int err = epos.setOpMode(OpMode::Homing, HomingMethod::CurrentThresholdNegative);
-        if( iNodeID == 2 || iNodeID == 3 || iNodeID == 6){
+        if( iNodeID == 2 || iNodeID == 3 || iNodeID == 6 || iNodeID > 6){
             //LOG_LOG("Passed");
             err = epos.setHomingMethod(HomingMethod::CurrentThresholdPositive);
         }
@@ -101,14 +124,31 @@ public:
         if (epos.getHomingStatus() == Completed) LOG_LOG("Homing complete");
         delay(500);
 
-//        err = epos.setEnable(false);
-//        if (err != 0) {
-//            LOG_ERROR("Disable");
-//            return kSetValueError;
-//        }
-
         return kNoError;
     }
+    Error_t testMove(int32_t pos ){
+        int err = epos.moveToPosition(pos, false);
+        if(err != 0){
+            LOG_ERROR("SDO move error");
+            return kSetValueError;
+        }
+        return kNoError;
+    }
+
+
+
+    void setPresserPointer(Striker* p) {
+        presserPointer = p;
+    }
+
+//    void setPresserCallback(PresserCallbackType callback) {
+//        pPresserCallback = callback;
+//    }
+//
+//    void executePress(uint8_t buttonId, int force) {
+//        if (pPresserCallback)
+//            controllerInstance->pPresserCallback(buttonId, force);
+//    }
 
     Error_t prepToGoHome() {
         m_mode = Command::Restart;
@@ -194,6 +234,7 @@ public:
 //                Serial.println(epos.angle2Pos(m_afTraj[m_iCurrentIdx], false));
                 //Serial.println(epos.getCurrentPosition_deg(), false);
                 epos.PDO_rotate(epos.getCurrentPosition_deg(), false);  // keep sending last postion to avoid 0x8250 - RPDO Timeout Error
+
                 return;
             }
         }
@@ -205,13 +246,22 @@ public:
 //         Serial.print(m_afTraj[m_iCurrentIdx]);
 //         Serial.print(" ");
 //         Serial.println(epos.angle2Pos(m_afTraj[m_iCurrentIdx], false));
-//         if(epos.angle2Pos(m_afTraj[m_iCurrentIdx], false) < 0 || epos.angle2Pos(m_afTraj[m_iCurrentIdx], false) > 700)) {
-//            if(epos.getNodeId()== 1){
+
+//         if(epos.angle2Pos(m_afTraj[m_iCurrentIdx], false) < -2147483646 || epos.angle2Pos(m_afTraj[m_iCurrentIdx], false) > 2147483646) {
 //             Serial.println("Overflow, skipping");
 //             ++m_iCurrentIdx;
 //             return;
 //         }
+
         int err = epos.PDO_rotate(m_afTraj[m_iCurrentIdx], false);
+
+
+
+//        if(m_iCurrentIdx == 99 && presserPointer != nullptr){
+//            Serial.println("End Reached");
+//            presserPointer->press(400);
+//              //Causes RPDO timeout
+//        }
         ++m_iCurrentIdx;
     }
 
@@ -234,7 +284,7 @@ public:
         int err = 0;
 
         if (bEnable) {
-            err = epos.setOpMode(OpMode::CyclicSyncTorque);
+            err = epos.setOpMode(OpMode::CyclicSyncPosition);
             err = epos.setNMTState(NMTState::Operational);
         } else {
             err = epos.setNMTState(NMTState::PreOperational);
@@ -252,8 +302,6 @@ public:
 
         if (bEnable) {
             err = epos.setOpMode(OpMode::CyclicSyncPosition);
-            //check position here
-            delay(500);
             err = epos.setNMTState(NMTState::Operational);
         } else {
             err = epos.setNMTState(NMTState::PreOperational);
@@ -288,7 +336,7 @@ public:
         m_mode = Command::Tremolo;
         m_iCurrentIdx = MAX_TRAJ_POINTS;
         generateTraj(midiVelocity);
-        strike();
+        //strike();
     }
 
     void stopTremolo() {
@@ -329,8 +377,12 @@ public:
         }
     }
 
+
 private:
     Epos4 epos;
+    //StrikerController* pInstance;
+
+
     bool m_bInitialized = false;
     Command m_mode = Command::Restart;
     static const int kNumPointsForHit = NUM_POINTS_IN_TRAJ_FOR_HIT * PDO_RATE;
@@ -339,6 +391,10 @@ private:
     int m_iCurrentIdx;
     float m_afTraj[MAX_TRAJ_POINTS];
     int m_iEndIdx = kTotalPoints;
+//    PresserCallbackType pPresserCallback = nullptr;
+ //   Striker* controllerInstance = nullptr;
+
+
 
     // Tremolo
     int m_iTremoloStartIdx = 0;
@@ -392,9 +448,11 @@ private:
 
 //      //Move to next fret
         q0 = epos.getCurrentPosition_deg();
+//        Serial.print("The rotation is ");
+//        Serial.println(epos.angle2Pos(midiVelocity, false));
         //best movement traj
 //        Util::interpWithBlend(q0, midiVelocity, 70, fBlend, m_afTraj);
-        Util::interpWithBlend(q0, midiVelocity, 70, .15, m_afTraj);
+        Util::interpWithBlend(q0, midiVelocity, 20, .05, m_afTraj);
 
 //        // upward movement
 //        q0 = fStrikePosition_deg;
@@ -464,6 +522,9 @@ private:
         float timeCorrection = min(1.f, m_iCurrentIdx / (1.f * kTotalPoints));
         return min(127, midiVelocity * sq(timeCorrection));
     }
+
+
+
 };
 
 #endif // STRIKER_H

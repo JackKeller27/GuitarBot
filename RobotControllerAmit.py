@@ -111,8 +111,12 @@ class GuitarRobotController():
         #     time.sleep(0.001)
         leftchord = cc.copy()
         timings = Events.copy()
+        print("t: ", timings)
         print("firstc: ", firstc)
-        self.guitarbot_udp.send_msg_left(iplaycommand=firstc[1], ifretnumber=firstc[0])
+        #Test
+        # self.guitarbot_udp.send_msg_left(iplaycommand=firstc[1], ifretnumber=firstc[0])
+        self.guitarbot_udp.send_msg_arduino(iplaycommand=firstc[1], ifretnumber=firstc[0])
+
         time.sleep(1)
         print("3")
         time.sleep(1)
@@ -126,7 +130,9 @@ class GuitarRobotController():
         maxchords = len(left_arm) - 1
         strumindex = 0
         strumdebugtick = time.time()
+        print("Timings: ", timings)
         for Event in timings:
+            print("E: ", Event)
             tNextEvent = Event[0]
             type = Event[1]
             if chordindex > maxchords:
@@ -156,13 +162,17 @@ class GuitarRobotController():
                 # print("array2", tNextEvent)
             else:  # TYPE 0 IS HERE AND IS PICKING
                 # print("array1", tNextEvent)
-                self.guitarbot_udp.send_msg_left(iplaycommand=chordtoplay[1], ifretnumber=chordtoplay[0])
+                # Test
+                # self.guitarbot_udp.send_msg_left(iplaycommand=chordtoplay[1], ifretnumber=chordtoplay[0])
+                self.guitarbot_udp.send_msg_arduino(iplaycommand=chordtoplay[1], ifretnumber=chordtoplay[0])
                 chordindex += 1
                 # time.sleep(measure_time / 4)
 
         # Pass to tune
         time.sleep(2)
-        self.guitarbot_udp.send_msg_left(iplaycommand=[1, 1, 1, 1, 1, 1], ifretnumber=firstc[0])
+        # self.guitarbot_udp.send_msg_left(iplaycommand=[1, 1, 1, 1, 1, 1], ifretnumber=firstc[0])
+        # test
+        # self.guitarbot_udp.send_msg_arduino(iplaycommand=[1, 1, 1, 1, 1, 1], ifretnumber=firstc[0])
         return 0
 
     def traj_generationUser(self, ri):
@@ -285,7 +295,6 @@ def main(ri, li, initStrum, mt, chord_change, strumO):
     Events = []
     strumchange = []
     for strums in strumOnsets:
-
         Events.append([strums[0], 1])
         if strums[2] == 'C':
             Events.append([strums[0] + 0.15, 1])

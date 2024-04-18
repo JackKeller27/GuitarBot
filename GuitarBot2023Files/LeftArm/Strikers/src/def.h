@@ -4,10 +4,12 @@
 
 #ifndef SHIMON_DEF_H
 #define SHIMON_DEF_H
+//change num pressers, TRACE_ME
 #define NUM_STRIKERS 6
-#define NUM_PRESSERS 6
-#define TOTAL_CONTROLLERS 6
+#define NUM_PRESSERS 0
+#define NUM_MOTORS NUM_PRESSERS+NUM_STRIKERS
 #define NUT_POS 0
+#define NUM_BYTES_PER_VALUE sizeof(uint16_t)
 
 #define ENCODER_DIR 1
 
@@ -16,10 +18,12 @@ const int kStrikerDirection[13] = { 0, 0, 1, 0, 0, 1, 1, 1, 0,0,0,0,0 }; // 0 is
 
 #define HOME_POSITION 25 // Deg
 #define P2P_MULT 100.f
-#define MAX_TRAJ_POINTS 70
-#define SCALE_LENGTH 648
-#define NUM_POINTS_IN_TRAJ_FOR_HIT 70  // Make sure Hit > up
+#define MAX_TRAJ_POINTS 20
+#define SCALE_LENGTH 635
+#define NUM_POINTS_IN_TRAJ_FOR_HIT 4  // Make sure Hit > up
 #define NUM_POINTS_IN_TRAJ_FOR_UP 0
+#define DISCONTINUITY_THRESHOLD 10000
+#define BUFFER_TIME 1
 
 #define CLEAR_FAULT_TIMER_INTERVAL 100   // ms
 

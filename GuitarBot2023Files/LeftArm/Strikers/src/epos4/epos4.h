@@ -14,9 +14,9 @@
 #include "../logger.h"
 #include "../ErrorDef.h"
 
-#define MAX_FOLLOW_ERROR 10000
+#define MAX_FOLLOW_ERROR 40000
 #define CALLBACK_ENC_THRESHOLD 5
-#define PDO_RATE 1 // ms
+#define PDO_RATE 5 // ms
 
 /*
     *  Reference: canTxRxNessage Example from OpenCR1.0 Arduino Library
@@ -84,7 +84,7 @@ public:
     int setProfile(_DWORD vel = 1000, _DWORD acc = 10000);
     int setHomingMethod(HomingMethod method);
     int setHomingCurrentThreshold(_WORD currentThreshold);
-    int moveToPosition(int32_t pos, bool bWait = true);
+    int moveToPosition(int32_t pos, bool bWait = false);
     int rotate(float fAngle, bool bRadian = true, bool bWait = true);
     int moveWithVelocity(int32_t velocity);
     int setFollowErrorWindow(_DWORD errWindow);
@@ -99,6 +99,7 @@ public:
     int setCurrentControlParameters_EC20();
     int setCurrentControlParameters_EC60();
     int setPositionControlParameters();
+    int setPositionControlParameters_EC20();
     int setPositionControlParameters_EC60();
     // Motor Data
     int setNominalCurrent(_DWORD current);

@@ -13,6 +13,35 @@ namespace Util {
     float __fretLength(float fretNumber);
     int32_t __pos2Pulse(float pos, int direction = ENCODER_DIR);
     int32_t fret2Pos(float fretPos);
+    template<typename T>
+    bool interp(T q0, T qf, size_t N, float tb_cent = 0.2, T* curve = nullptr) {
+        if (!curve)
+            return false;
+
+        if (q0 == qf) {
+            for (int i = 0; i < N; ++i)
+                curve[i] = q0;
+            return true;
+        }
+
+        int nb = int(tb_cent * N);
+        float a_2 = 0.5 * (qf - q0) / (nb * (N - nb));
+        T tmp;
+
+        for (int i = 0; i < nb; ++i) {
+            tmp = a_2 * pow(i, 2);
+            curve[i] = q0 + tmp;
+            //  N-1, N-2, ... , N - nb
+            curve[N - i - 1] = qf - tmp;
+        }
+
+        tmp = a_2 * pow(nb, 2);
+        T qa = q0 + tmp;
+        T qb = qf - tmp;
+        linspace(qa, qb, N - (2 * nb), &curve[nb]);
+
+        return true;
+    }
 
 
 
