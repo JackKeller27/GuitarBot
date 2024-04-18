@@ -9,7 +9,7 @@ import RobotControllerAmit
 
 socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 udp_ip = "127.0.0.1" #UDP_IP
-udp_port = 40012 #UDP_PORT
+udp_port = 4268 #UDP_PORT
 left_arm_header = "l_arm_guitar"
 right_arm_header = "r_arm_guitar"
 measure_time_header = "measure_time_guitar"

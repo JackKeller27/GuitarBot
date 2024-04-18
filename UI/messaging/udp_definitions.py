@@ -4,8 +4,8 @@ LOCAL_UDP_IP = "127.0.0.1"
 UDP_PORT = 4268  # (GBOT)
 
 # NOTE: change this depending on whether sending locally or from laptop to lab computer
-DESTINATION_IP = GUITARBOT_UDP_IP
-#DESTINATION_IP = LOCAL_UDP_IP
+#DESTINATION_IP = GUITARBOT_UDP_IP
+DESTINATION_IP = LOCAL_UDP_IP
 RECEIVER_IP = "0.0.0.0"  # open to all sources. Should remain constant
 
 # HEADER DEFINITIONS
