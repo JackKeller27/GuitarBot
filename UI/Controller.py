@@ -84,21 +84,18 @@ class Controller:
             labels_frame.strum_pattern.trace_add(('write'), lambda e1, e2, e3: self._update_section_strum_pattern_handler(e1, e2, e3, section_frame, labels_frame))
 
         # Eraser (clear measure) icons
-        for tuple in section_frame.eraser_btns:
-            btn, measure_idx = tuple
-            # TODO: measure_idx is only passing the last measure num. copy, deepcopy didn't fix it
-            btn.configure(command=lambda: self._clear_measure_handler(section_frame, measure_idx)) # use configure for CTk btn
+        for btn, measure_idx in section_frame.eraser_btns:
+            btn.configure(command=lambda sf=section_frame, mi = measure_idx: self._clear_measure_handler(sf, mi)) # use configure for CTk btn
 
         # Trash (remove measure) icons
-        for tuple in section_frame.trash_btns:
-            btn, measure_idx = tuple
-            btn.configure(command=lambda: self._remove_measure_handler(None, section_frame, measure_idx)) # use configure for CTk btn
+        for btn, measure_idx in section_frame.trash_btns:
+            btn.configure(command=lambda b=btn, sf=section_frame, mi = measure_idx: self._remove_measure_handler(b, sf, mi)) # use configure for CTk btn
 
         # Add/remove measure key bindings for input boxes
         for row in range(2, 4):
-            for col in range(1, section_frame.subdiv_per_measure * section_frame.num_measures + 1):
+            for col in range(1, section_frame.subdiv_per_measure * section_frame.num_measures + 1): # SUSPICIOUS THAT SECTION_FRAME.NUM_MEASURES IS NOT INCREMENTED??????/
                 entry = section_frame.grid_slaves(row=row, column=col)[0]
-                m = col % section_frame.subdiv_per_measure
+                m = int(col / section_frame.subdiv_per_measure)
 
                 # Return -> Add measure
                 entry.bind("<Shift-Return>", lambda e: self._add_measure_handler(e, section_frame, m))
@@ -225,7 +222,7 @@ class Controller:
         self.model.remove_section(id)
 
     def _add_measure_handler(self, e, section_frame, measure_idx):
-        print(f'Add measure handler, {measure_idx} to section {section_frame.id}')
+        # print(f'Add measure handler, {measure_idx} to section {section_frame.id}')
         # add measure to View
         # TODO uncomment once this function is implemented in SectionFrame.py (adds measure at any point in the section)
         #section_frame.add_measure(measure_idx)
@@ -248,13 +245,9 @@ class Controller:
         self._update_model_section_arm_lists(section_frame)
 
     def _remove_measure_handler(self, e, section_frame, measure_idx):
-        print(f'Remove measure handler, {measure_idx} from section {section_frame.id}')
+        # print(f'btn {e} pressed, removing measure {measure_idx} from section {section_frame.id}')
         # remove measure from View
-        # TODO uncomment once this function is implemented in SectionFrame.py (removes measure from any point in the section)
-        # section_frame.remove_measure(measure_idx)
-
-        # for now, just remove measure from the end of the section
-        section_frame.remove_measure()
+        section_frame.remove_measure(measure_idx)
 
         # update section data in model
         self._update_model_section_arm_lists(section_frame)
@@ -354,16 +347,9 @@ class Controller:
         
         # get the total time for each measure in seconds
         measure_time = self._calculate_measure_time()
-        #print(measure_time)
 
         # send arm lists, measure_time to reciever via UDP message
         self.arm_list_sender.send_arm_lists_to_reciever(left_arm, right_arm, measure_time)
-        
-        # # call parse.py methods to parse left_arm, right_arm data for entire song
-        # left_arm_info, first_c, m_timings = SongParser.parseleft_M(left_arm, measure_time)
-        # right_arm_info, initial_strum, strum_onsets = SongParser.parseright_M(right_arm, measure_time)
-
-        # # TODO send parseleft_M, parseright_M outputs to robot controller via UDP message
 
     # NOTE tried to run this on a separate thread, but due to the Global Python Interpreter lock (GIL), a separate thread still blocks the main UI thread.
     def _preview_song_with_plugin(self):
