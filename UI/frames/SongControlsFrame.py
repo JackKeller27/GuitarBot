@@ -77,3 +77,9 @@ class SongControlsFrame(tk.Frame):
 
         self.time_sig_dd = ttk.OptionMenu(self, self.time_signature, "4/4", *time_signature_options)
         self.time_sig_dd.grid(row=1, column=9, sticky='EW')
+
+    def update_song_data(self, song_title, bpm, time_signature, chord_mode):
+        self.song_title.set(song_title)
+        self.bpm.set(bpm)
+        self.time_signature.set(time_signature)
+        self.chord_mode.set(chord_mode)

@@ -2,12 +2,19 @@
     {
         "song_title": "New format",
         "time_signature": "4/4",
-        "bpm": 80,
+        "bpm": 90,
         "chord_mode": "Optimal",
-        "song_order": "Section1, Section2, Section1, Section2, Section2"
+        "ordered_section_ids": [
+            1,
+            2,
+            1,
+            2,
+            1
+        ]
     },
     {
-        "name": "Section1",
+        "id": 1,
+        "name": "Verse",
         "num_measures": 1,
         "strum_pattern": "Downs",
         "left_arm": [
@@ -32,27 +39,28 @@
         ]
     },
     {
-        "name": "Section2",
+        "id": 2,
+        "name": "End",
         "num_measures": 1,
         "strum_pattern": "Custom",
         "left_arm": [
             [
                 "F",
-                "D",
                 "",
-                ""
+                "",
+                "G"
             ]
         ],
         "right_arm": [
             [
-                "u",
+                "d",
                 "",
                 "",
                 "",
                 "",
                 "",
                 "",
-                ""
+                "u"
             ]
         ]
     }

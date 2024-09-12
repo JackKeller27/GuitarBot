@@ -2,7 +2,7 @@ import numpy as np
 import time
 from queue import Queue
 from GuitarBotUDP import GuitarBotUDP
-from xarm.wrapper import XArmAPI
+# from xarm.wrapper import XArmAPI      TODO XARM
 import threading
 import logging
 
@@ -40,10 +40,10 @@ chords_dir = "Chords - Chords.csv"
 class GuitarRobotController():
     def __init__(self):
         # self.cobot_controller = CobotController(250, INIT_POSE)
-        self.xarm = XArmAPI(XARM_IP)
+        # self.xarm = XArmAPI(XARM_IP)                                      TODO XARM
         self.guitarbot_udp = GuitarBotUDP(UDP_IP, UDP_PORT)
         self.left_thread = threading.Thread(target=self.lefthand_move)
-        self.right_thread = threading.Thread(target=self.robot_move)
+        # self.right_thread = threading.Thread(target=self.robot_move)      TODO XARM
         # self.pick_thread = threading.Thread(target=self.pick_move)
 
     def robot_init(self):
@@ -60,12 +60,12 @@ class GuitarRobotController():
 
     def thread_start(self):
         self.left_thread.start()
-        self.right_thread.start()
+        # self.right_thread.start()         TODO XARM
         # self.pick_thread.start()
 
     def thread_end(self):
         self.left_thread.join()
-        self.right_thread.join()
+        # self.right_thread.join()          TODO XARM
         # self.pick_thread.join()
 
     def _fifth_poly(self, q_i, q_f, time):
@@ -117,12 +117,19 @@ class GuitarRobotController():
         # self.guitarbot_udp.send_msg_left(iplaycommand=firstc[1], ifretnumber=firstc[0])
         self.guitarbot_udp.send_msg_arduino(iplaycommand=firstc[1], ifretnumber=firstc[0])
 
-        time.sleep(1)
+        bpm = 60
+        bps = bpm / 60
+
+        print("4")
+        time.sleep(1 / bps)
         print("3")
-        time.sleep(1)
+        time.sleep(1 / bps)
         print("2")
-        time.sleep(1)
+        time.sleep(1 / bps)
         print("1")
+        time.sleep((1 / bps) - .15)
+
+
         chordindex = 0
 
         ts = 0
@@ -141,6 +148,7 @@ class GuitarRobotController():
             # beat_duration = measure_time / 4
 
             while ts < tNextEvent:
+                #TODO: Refactor to not constantly check, and add offset for changing chords
                 ts = time.time() - tbaseline
                 time.sleep(0.001)
             # print("we hit time", t_start_local)
@@ -172,10 +180,12 @@ class GuitarRobotController():
         time.sleep(2)
         # self.guitarbot_udp.send_msg_left(iplaycommand=[1, 1, 1, 1, 1, 1], ifretnumber=firstc[0])
         # test
-        # self.guitarbot_udp.send_msg_arduino(iplaycommand=[1, 1, 1, 1, 1, 1], ifretnumber=firstc[0])
+        self.guitarbot_udp.send_msg_arduino(iplaycommand=[1, 1, 1, 1, 1, 1], ifretnumber=firstc[0])
+        print("done")
         return 0
 
     def traj_generationUser(self, ri):
+
         print("hi")
         # Strum len will change according to different ranges of BPM
         strumlen = .15
@@ -314,9 +324,9 @@ def main(ri, li, initStrum, mt, chord_change, strumO):
     # osc_reader.listen2max()
 
     # grc.traj_generation(rhythm)
-    grc.robot_init()
+    # grc.robot_init()          TODO XARM
     time.sleep(1)
-    grc.xarm_start()
+    # grc.xarm_start()          TODO XARM
     time.sleep(1)
     grc.thread_start()
 

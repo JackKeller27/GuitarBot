@@ -86,8 +86,8 @@ int Epos4::configEC20() {
         LOG_ERROR("setNominalCurrent");
         return err;
     }
-
-    err = setOutputCurrentLimit(1310);
+    
+    err = setOutputCurrentLimit(1200);
     if (err != 0) {
         LOG_ERROR("setOutputCurrentLimit");
         return err;
@@ -542,7 +542,7 @@ int Epos4::setOpMode(OpMode opMode, uint8_t uiInterpolationTime, int8_t iInterpo
         n = SetHomeOffset(52000);
         //SetHomeOffset(1500);
         if(m_uiNodeID > 6){
-            n = SetHomeOffset(20);
+            n = SetHomeOffset(-25);
         }
         if(n != 0 ) {
             LOG_ERROR("setHomeOffset");
@@ -557,7 +557,7 @@ int Epos4::setOpMode(OpMode opMode, uint8_t uiInterpolationTime, int8_t iInterpo
 
         n = setHomingCurrentThreshold(2000);
         if(m_uiNodeID > 6){
-            n = setHomingCurrentThreshold(1000);
+            n = setHomingCurrentThreshold(500);
         }
         if (n != 0) {
             LOG_ERROR("setHomingCurrentThreshold");
@@ -958,7 +958,7 @@ int Epos4::setCurrentControlParameters() {
 }
 int Epos4::setCurrentControlParameters_EC20() {
     int n;
-    n = writeObj(CURRENT_CTRL_PARAM_ADDR, CC_P_GAIN, 908);
+    n = writeObj(CURRENT_CTRL_PARAM_ADDR, CC_P_GAIN, 3456649);
     if (n != 0) {
         LOG_ERROR("Write Obj failed. Error code: ", m_uiError);
         return -1;
@@ -993,7 +993,7 @@ int Epos4::setCurrentControlParameters_EC60() {
 
 int Epos4::setPositionControlParameters() {
     int n;
-    n = writeObj(POS_CTRL_PARAM_ADDR, PC_P_GAIN, 330000);
+    n = writeObj(POS_CTRL_PARAM_ADDR, PC_P_GAIN, 1230000);
     if (n != 0) {
         LOG_ERROR("Write Obj failed. Error code: ", m_uiError);
         return -1;
@@ -1033,7 +1033,7 @@ int Epos4::setPositionControlParameters() {
 }
 int Epos4::setPositionControlParameters_EC20() {
     int n;
-    n = writeObj(POS_CTRL_PARAM_ADDR, PC_P_GAIN, 1012500); // 11758200
+    n = writeObj(POS_CTRL_PARAM_ADDR, PC_P_GAIN, 92493); // 1012500
     if (n != 0) {
         LOG_ERROR("Write Obj failed. Error code: ", m_uiError);
         return -1;
@@ -1046,25 +1046,25 @@ int Epos4::setPositionControlParameters_EC20() {
         return -1;
     }
 
-    n = writeObj(POS_CTRL_PARAM_ADDR, PC_I_GAIN, 2551500);
+    n = writeObj(POS_CTRL_PARAM_ADDR, PC_I_GAIN, 905480); //2551500
     if (n != 0) {
         LOG_ERROR("Write Obj failed. Error code: ", m_uiError);
         return -1;
     }
 
-    n = writeObj(POS_CTRL_PARAM_ADDR, PC_D_GAIN, 90000);
+    n = writeObj(POS_CTRL_PARAM_ADDR, PC_D_GAIN, 2643); //90000
     if (n != 0) {
         LOG_ERROR("Write Obj failed. Error code: ", m_uiError);
         return -1;
     }
 
-    n = writeObj(POS_CTRL_PARAM_ADDR, PC_FF_V_GAIN, 0);
+    n = writeObj(POS_CTRL_PARAM_ADDR, PC_FF_V_GAIN, 507);
     if (n != 0) {
         LOG_ERROR("Write Obj failed. Error code: ", m_uiError);
         return -1;
     }
 
-    n = writeObj(POS_CTRL_PARAM_ADDR, PC_FF_A_GAIN, 0);
+    n = writeObj(POS_CTRL_PARAM_ADDR, PC_FF_A_GAIN, 36);
     if (n != 0) {
         LOG_ERROR("Write Obj failed. Error code: ", m_uiError);
         return -1;

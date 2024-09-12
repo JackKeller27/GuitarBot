@@ -16,7 +16,16 @@
     <configurations />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5f2e5882-dc39-48b1-80a5-dbe66f04f6f0" name="Changes" comment="" />
+    <list default="true" id="5f2e5882-dc39-48b1-80a5-dbe66f04f6f0" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../Strikers.ino" beforeDir="false" afterPath="$PROJECT_DIR$/../Strikers.ino" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/def.h" beforeDir="false" afterPath="$PROJECT_DIR$/def.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/epos4/epos4.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/epos4/epos4.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/strikerController.h" beforeDir="false" afterPath="$PROJECT_DIR$/strikerController.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../RobotControllerAmit.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../RobotControllerAmit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../arm_list_receiver.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../arm_list_receiver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../parsing/ArmListParser.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../parsing/ArmListParser.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -26,6 +35,9 @@
     <option name="formatViaClangd" value="false" />
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../../../.." />
+  </component>
   <component name="ProjectApplicationVersion">
     <option name="ide" value="CLion" />
     <option name="majorVersion" value="2023" />
@@ -44,6 +56,7 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
     "WebServerToolWindowFactoryState": "false",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
@@ -52,6 +65,7 @@
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
     "settings.editor.selected.configurable": "CMakeSettings",
     "vue.rearranger.settings.migration": "true"
   }
@@ -74,7 +88,8 @@
       <workItem from="1706302934852" duration="8034000" />
       <workItem from="1706371221143" duration="155670000" />
       <workItem from="1710181012881" duration="39265000" />
-      <workItem from="1710514209356" duration="174284000" />
+      <workItem from="1710514209356" duration="209168000" />
+      <workItem from="1714336712389" duration="22000" />
     </task>
     <servers />
   </component>

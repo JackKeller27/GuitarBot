@@ -1,28 +1,31 @@
 [
     {
-        "song_title": "preview",
+        "song_title": "Island in the Sun",
         "time_signature": "4/4",
-        "bpm": "60",
+        "bpm": 115,
         "chord_mode": "Optimal",
         "ordered_section_ids": [
             1,
-            2
+            1,
+            1,
+            1,
+            1
         ]
     },
     {
         "id": 1,
-        "name": "v",
+        "name": "verse",
         "num_measures": 2,
         "strum_pattern": "Custom",
         "left_arm": [
             [
-                "C",
+                "Em",
                 "",
                 "Am",
                 ""
             ],
             [
-                "F",
+                "D",
                 "",
                 "G",
                 ""
@@ -40,39 +43,13 @@
                 "u"
             ],
             [
-                "d",
                 "",
-                "d",
-                "u",
-                "d",
-                "",
-                "d",
-                "u"
-            ]
-        ]
-    },
-    {
-        "id": 2,
-        "name": "c",
-        "num_measures": 1,
-        "strum_pattern": "Custom",
-        "left_arm": [
-            [
-                "F",
-                "",
-                "C",
-                ""
-            ]
-        ],
-        "right_arm": [
-            [
-                "d",
                 "u",
                 "d",
                 "u",
                 "d",
                 "",
-                "",
+                "d",
                 ""
             ]
         ]

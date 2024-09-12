@@ -1,8 +1,9 @@
 import socket
-import RobotControllerAmit
 from ast import literal_eval
-from parsing.ArmListParser import ArmListParser
+
+import RobotControllerAmit
 from UI.messaging.udp_definitions import *
+from parsing.ArmListParser import ArmListParser
 
 # Define ip/port/headers
 udp_ip = RECEIVER_IP

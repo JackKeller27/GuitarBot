@@ -49,3 +49,6 @@ class SectionLabelsFrame(tk.Frame):
         # set strum_options_dd back to default value
         self.strum_pattern.set('Strum Pattern')
 
+    def update_name_and_strum_pattern(self, name, strum_pattern):
+        self.name.set(str(name))
+        self.strum_pattern.set(strum_pattern)

@@ -72,7 +72,49 @@ public:
             }
 
         }
-        Serial.println("finished initializing all controllers.");
+        for (int i = 1; i < NUM_STRIKERS + 1; ++i) {
+            m_striker[i].startHome(i);
+            }
+        int ii = 0;
+        bool isHoming_all = true;
+        bool isHoming_1 = true;
+        bool isHoming_2 = true;
+        bool isHoming_3 = true;
+        bool isHoming_4 = true;
+        bool isHoming_5 = true;
+        bool isHoming_6 = true;
+
+        while (isHoming_all) {
+            delay(50);
+            isHoming_1 = m_striker[1].homingStatus();
+            isHoming_2 = m_striker[2].homingStatus();
+            isHoming_3 = m_striker[3].homingStatus();
+            isHoming_4 = m_striker[4].homingStatus();
+            isHoming_5 = m_striker[5].homingStatus();
+            isHoming_6 = m_striker[6].homingStatus();
+            isHoming_all = isHoming_1 || isHoming_2 || isHoming_3 || isHoming_4 || isHoming_5 || isHoming_6;
+
+            if (ii++ > 200) break;
+        }
+
+        LOG_LOG("Homing for sliders, starting pressers. ");
+        for (int i = NUM_STRIKERS + 1; i < NUM_PRESSERS + NUM_STRIKERS + 1; ++i) {
+            m_striker[i].startHome(i);
+            }
+        while (isHoming_all) {
+            delay(50);
+            isHoming_1 = m_striker[7].homingStatus();
+            isHoming_2 = m_striker[8].homingStatus();
+            isHoming_3 = m_striker[9].homingStatus();
+            isHoming_4 = m_striker[10].homingStatus();
+            isHoming_5 = m_striker[11].homingStatus();
+            isHoming_6 = m_striker[12].homingStatus();
+            isHoming_all = isHoming_1 || isHoming_2 || isHoming_3 || isHoming_4 || isHoming_5 || isHoming_6;
+
+            if (ii++ > 200) break;
+        }
+
+        Serial.println("finished initializing and homing all controllers.");
         //delay(20000);
         return kNoError;
     }
@@ -172,29 +214,104 @@ public:
             }
         }
     }
+    void executeSlideTest(int string_1, int string_2, int string_3, int string_4, int string_5, int string_6, int frets_1, int frets_2) {
+        strings[1] = string_1;
+        strings[2] = string_2;
+        strings[3] = string_3;
+        strings[4] = string_4;
+        strings[5] = string_5;
+        strings[6] = string_6;
+        strings[7] = frets_1;
+        strings[8] = frets_2;
 
-    void executeSlide(int string_1, int string_2, int string_3, int string_4, int string_5, int string_6, int frets_1, int frets_2) {
+        float fretLength;
+        float pos2pulse;
+        float temp_traj_1[40];
+        float temp_traj_2[20];
+        float q0;
+        float qf;
+
+        for(int i = 1; i < NUM_MOTORS + 1; i++) {
+            int mult = -1;
+            if (i == 2 || i == 3 || i == 6) {
+                mult = 1;
+            }
+            if (i < 7) {
+                fretLength = (SCALE_LENGTH - (SCALE_LENGTH / pow(2, (strings[i] / 12.f)))) - 12;
+                pos2pulse = (mult * fretLength * 2048) / 10;
+                q0 = m_striker[i].getPosition_ticks();
+                qf = (i > 6) ? strings[i] : pos2pulse;
+            } else {
+                q0 = m_striker[i].getPosition_ticks();
+                qf = (i > 6) ? strings[i] : -5;
+            }
+
+            if (i < 7) {
+                Util::fill(temp_traj_1, 40, q0);
+                Util::interpWithBlend(q0, qf, 20, .05, temp_traj_2);
+            } else {
+                Util::interpWithBlend(q0, -5, 40, .25, temp_traj_1);
+                Util::interpWithBlend(-5, qf, 20, .25, temp_traj_2);
+            }
+
+            for (int x = 0; x < 40; x++) {
+                all_Trajs[i - 1][x] = temp_traj_1[x];
+            }
+            for (int x = 0; x < 20; x++) {
+                all_Trajs[i - 1][x + 40] = temp_traj_2[x];
+            }
+        }
+
+        Trajectory<int32_t>::point_t temp_point;
+        for (int i = 0; i < 60; i++) {
+            for(int x = 0; x < NUM_MOTORS; x++){
+                temp_point[x] = all_Trajs[x][i];
+            }
+            m_traj.push(temp_point);
+        }
+    }
+
+    void executeSlide(int string_1, int string_2, int string_3, int string_4, int string_5, int string_6, int frets_1, int frets_2, int frets_3, int frets_4,  int frets_5, int frets_6) {
         int mult = -1;
-//        if(idCode == 2 || idCode == 3 || idCode == 6){
-//            mult = 1;
-//        }
-// TRACE ME, add new arrays with the pressers
         strings[1] = fminf(string_1, 9); // setting to max out at 9 for now
         strings[2] = fminf(string_2, 9);
         strings[3] = fminf(string_3, 9);
         strings[4] = fminf(string_4, 9);
         strings[5] = fminf(string_5, 9);
         strings[6] = fminf(string_6, 9);
-        // Make new
+
         strings[7] = frets_1;
         strings[8] = frets_2;
-        float temp_traj_1[10];
+        strings[9] = frets_3;
+        strings[10] = frets_4;
+        strings[11] = frets_5;
+        strings[12] = frets_6;
+        for(int i = 0; i < 6; i++){
+            Serial.println(strings[i+7]);
+            switch (strings[i + 7]) {
+                case 1:
+                    strings[i + 7] = -10;
+                    break;
+                case 2:
+                    strings[i + 7] = 36;
+                    break;
+                case 3:
+                    strings[i + 7] = 23;
+                    break;
+                default:
+                    strings[i + 7] = -10;
+                    break;
+            }
+            //Serial.println(strings[i+7]);
+        }
+
+        float temp_traj_1[40];
         float temp_traj_2[20];
 
         for(int i = 1; i < NUM_MOTORS + 1; i++) {
             mult = -1;
-            float fretLength = (SCALE_LENGTH - (SCALE_LENGTH / pow(2, (((strings[i])) / 12.f)))) - 12;
-            float pos2pulse = (fretLength * 2048) / 10;
+            float fretLength = (SCALE_LENGTH - (SCALE_LENGTH / pow(2, (((strings[i])) / 12.f)))) - 20;
+            float pos2pulse = (fretLength * 2048) / 9.4;
             if (i == 2 || i == 3 || i == 6) {
                 mult = 1;
             }
@@ -205,20 +322,20 @@ public:
                 qf = strings[i];
             }
             if (i < 7) {
-                Util::fill(temp_traj_1, 10, q0);
+                Util::fill(temp_traj_1, 40, q0);
                 Util::interpWithBlend(q0, qf, 20, .05, temp_traj_2);
                 int index = 0;
-                for (int x = 0; x < 10; x++) {
+                for (int x = 0; x < 40; x++) {
                     all_Trajs[i - 1][index++] = temp_traj_1[x];
                 }
                 for (int x = 0; x < 20; x++) {
                     all_Trajs[i - 1][index++] = temp_traj_2[x];
                 }
             } else {
-                Util::interpWithBlend(q0, -5, 10, .05, temp_traj_1);
-                Util::interpWithBlend(-5, qf, 20, .05, temp_traj_2);
+                Util::interpWithBlend(q0, -10, 40, .25, temp_traj_1);
+                Util::interpWithBlend(-10, qf, 20, .25, temp_traj_2);
                 int index = 0;
-                for (int x = 0; x < 10; x++) {
+                for (int x = 0; x < 40; x++) {
                     all_Trajs[i - 1][index++] = temp_traj_1[x];
                 }
                 for (int x = 0; x < 20; x++) {
@@ -228,85 +345,14 @@ public:
         }
 
         Trajectory<int32_t>::point_t temp_point;
-        for (int i = 0; i < 30; i++) {
+        for (int i = 0; i < 60; i++) {
             for(int x = 0; x < NUM_MOTORS; x++){
                 temp_point[x] = all_Trajs[x][i];
             }
             m_traj.push(temp_point);
         }
     }
-//    void executeSlide_Dynamic(int string_1, int string_2, int string_3, int string_4, int string_5, int string_6, int frets_1, int frets_2) {
-//        int mult = -1;
-////        if(idCode == 2 || idCode == 3 || idCode == 6){
-////            mult = 1;
-////        }
-//// TRACE ME, add new arrays with the pressers
-//        strings[1] = string_1;
-//        strings[2] = string_2;
-//        strings[3] = string_3;
-//        strings[4] = string_4;
-//        strings[5] = string_5;
-//        strings[6] = string_6;
-//        // Make new
-//        strings[7] = frets_1;
-//        strings[8] = frets_2;
-//
-//        float temp_traj_1[10];
-//        float temp_traj_2[20];
-//        float temp_traj_3[10];
-//
-//        for(int i = 1; i < NUM_MOTORS + 1; i++) {
-//            mult = -1;
-//            float fretLength = (SCALE_LENGTH - (SCALE_LENGTH / pow(2, (((strings[i])) / 12.f)))) - 12;
-//            float pos2pulse = (fretLength * 2048) / 10;
-//            if (i == 2 || i == 3 || i == 6) {
-//                mult = 1;
-//            }
-//
-//            pos2pulse = mult * pos2pulse;
-//            float q0 = m_striker[i].getPosition_ticks();
-//            float qf = pos2pulse;
-//            if(i < 7) { //slider
-//                Util::fill(temp_traj_1, 10, q0);
-//                Util::interpWithBlend(q0, qf, 20, .05, temp_traj_2);
-//                Util::fill(temp_traj_3, 10, qf);
-//                int index = 0;
-//                for (int x = 0; x < 10; x++) {
-//                    all_Trajs[i - 1][index++] = temp_traj_1[x];
-//                }
-//                for (int x = 0; x < 20; x++) {
-//                    all_Trajs[i - 1][index++] = temp_traj_2[x];
-//                }
-//                for (int x = 0; x < 10; x++) {
-//                    all_Trajs[i - 1][index++] = temp_traj_3[x];
-//                }
-//            }
-//            else{ //presser
-//                qf = strings[i];
-//                Util::interpWithBlend(q0, -1, 10, .05, temp_traj_1);
-//                Util::fill(temp_traj_2, 20, -1);
-//                Util::interpWithBlend(-1, qf, 10, .05, temp_traj_3);
-//                int index = 0;
-//                for (int x = 0; x < 10; x++) {
-//                    all_Trajs[i - 1][index++] = temp_traj_1[x];
-//                }
-//                for (int x = 0; x < 20; x++) {
-//                    all_Trajs[i - 1][index++] = temp_traj_2[x];
-//                }
-//                for (int x = 0; x < 10; x++) {
-//                    all_Trajs[i - 1][index++] = temp_traj_3[x];
-//                }
-//            }
-//        }
-//
-//        Trajectory<int32_t>::point_t temp_point;
-//        for (int i = 0; i < 40; i++) {
-//            for(int x = 0; x < NUM_MOTORS; x++){
-//                temp_point[x] = all_Trajs[x][i];
-//            }
-//            m_traj.push(temp_point);
-//        }
-//    }
+
 
     void executeCommand(uint8_t idCode, char mode, int midiVelocity, uint8_t channelPressure) {
 
@@ -429,7 +475,7 @@ public:
         for (int i = 1; i < NUM_STRIKERS + 1; ++i) {
             err = m_striker[i].enablePDO(bEnable);
             LOG_LOG("Enabling PDO for slider %i", i);
-            delay(1000);
+            delay(300);
             if (err != kNoError) {
                 LOG_ERROR("EnablePDO failed. Error Code %i", err);
                 return err;
@@ -439,7 +485,7 @@ public:
         for (int i = NUM_STRIKERS + 1; i < NUM_STRIKERS + NUM_PRESSERS + 1; ++i) {
             err = m_striker[i].enablePDOEC20(bEnable);
             LOG_LOG("Enabling PDO for presser %i", i);
-            delay(1000);
+            delay(300);
             if (err != kNoError) {
                 LOG_ERROR("EnablePDO failed. Error Code %i", err);
                 return err;
@@ -454,7 +500,7 @@ public:
         for (int i = 1; i < NUM_STRIKERS + NUM_PRESSERS + 1; ++i) {
             LOG_LOG("Enabling controller %i", i);
             err = m_striker[i].enable(bEnable);
-            delay(500);
+            delay(300);
             if (err != 0) {
                 LOG_ERROR("Enable failed. Error Code %h", err);
                 return kSetValueError;
@@ -485,21 +531,21 @@ private:
     bool m_bSendDataRequest = true;
     bool m_bDataRequested = false;
 
-    float all_Trajs[8][30];
+    float all_Trajs[8][60];
 
-    float m_afTraj_string_1[30];
-    float m_afTraj_string_2[30];
-    float m_afTraj_string_3[30];
-    float m_afTraj_string_4[30];
-    float m_afTraj_string_5[30];
-    float m_afTraj_string_6[30];
+    float m_afTraj_string_1[60];
+    float m_afTraj_string_2[60];
+    float m_afTraj_string_3[60];
+    float m_afTraj_string_4[60];
+    float m_afTraj_string_5[60];
+    float m_afTraj_string_6[60];
 // Make new float array w/ pressers. Fill with current 20 vals that are current and 1 val that is TRACE_ME
-    float m_afTraj_fret_1[30];
-    float m_afTraj_fret_2[30];
-    float m_afTraj_fret_3[30];
-    float m_afTraj_fret_4[30];
-    float m_afTraj_fret_5[30];
-    float m_afTraj_fret_6[30];
+    float m_afTraj_fret_1[60];
+    float m_afTraj_fret_2[60];
+    float m_afTraj_fret_3[60];
+    float m_afTraj_fret_4[60];
+    float m_afTraj_fret_5[60];
+    float m_afTraj_fret_6[60];
 
     int strings[NUM_MOTORS + 1];
     uint32_t kInitials[NUM_MOTORS];
@@ -578,15 +624,16 @@ private:
             }
         }
 
-//        if (idx % 1 == 0) {
-//            for (int i = 0; i < NUM_MOTORS; ++i) {
-//                //Serial.print("Traj Point: ");
-//                //Serial.println(point[i]);
+//        for (int i = 0; i < NUM_MOTORS; ++i) {
+//            if(i == 7){
+//                Serial.print("Index: ");
+//                Serial.println(idx);
+//                Serial.print("Traj Point: ");
+//                Serial.println(point[i]);
 //                //Serial.print(idx);
 //            }
-//            //Serial.print("Index: ");
-//            //Serial.println(idx);
 //        }
+
         bool run_bot = true; //false turns off motor, true turns on
 //        Serial.print("Traj Point: ");
 //        Serial.println(point[3]);

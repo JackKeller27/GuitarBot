@@ -86,7 +86,7 @@ void loop() {
 //          }
 //        }
 
-        pController->executeSlide(fret[0], fret[1], fret[2], fret[3], fret[4], fret[5], 0, 0);
+        pController->executeSlide(fret[0], fret[1], fret[2], fret[3], fret[4], fret[5], playcommand[0], playcommand[1], playcommand[2], playcommand[3], playcommand[4], playcommand[5]);
 
         if (err == kNoError) {
           LOG_LOG("playcommand 1: %i, playcommand 2: %i, playcommand 3: %i, playcommand 4: %i, playcommand 5: %i, playcommand 6: %i", playcommand[0], playcommand[1], playcommand[2], playcommand[3], playcommand[4], playcommand[5]);

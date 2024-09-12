@@ -43,16 +43,16 @@ public:
 
         m_iCurrentIdx = kTotalPoints;
         m_mode = Command::Restart;
-        if (spec==EC45) {
-            LOG_LOG("Start Homing");
-            Error_t e = home(iNodeId);
-            if (e != kNoError) return e;
-        }
-        if (spec==EC20) {
-            LOG_LOG("Start Homing");
-            Error_t e = home(iNodeId);
-            if (e != kNoError) return e;
-        }
+//        if (spec==EC45) {
+//            LOG_LOG("Start Homing");
+//            Error_t e = home(iNodeId);
+//            if (e != kNoError) return e;
+//        }
+//        if (spec==EC20) {
+//            LOG_LOG("Start Homing");
+//            Error_t e = home(iNodeId);
+//            if (e != kNoError) return e;
+//        }
         stopStrike();
 
         m_bInitialized = true;
@@ -81,6 +81,39 @@ public:
         epos.reset();
         stopStrike();
         m_bInitialized = false;
+    }
+    bool homingStatus(){
+        return epos.getHomingStatus() == InProgress;
+    }
+
+    Error_t startHome(int iNodeID) {
+//        int err = epos.SetHomePosition(0);
+//        if (err != 0) return kSetValueError;
+//        return prepToGoHome();
+        // Added Homing compatible w/ epos
+        int err = epos.setOpMode(OpMode::Homing, HomingMethod::CurrentThresholdNegative);
+        if( iNodeID == 2 || iNodeID == 3 || iNodeID == 6 || iNodeID > 6){
+            //LOG_LOG("Passed");
+            err = epos.setHomingMethod(HomingMethod::CurrentThresholdPositive);
+        }
+        if (err != 0) {
+            LOG_ERROR("setOpMode");
+            return kSetValueError;
+        }
+
+        err = epos.setEnable();
+        if (err != 0) {
+            LOG_ERROR("setEnable");
+            return kSetValueError;
+        }
+
+        err = epos.startHoming();
+        if (err != 0) {
+            LOG_ERROR("startHoming");
+            return kSetValueError;
+        }
+
+        return kNoError;
     }
 
     Error_t home(int iNodeID) {

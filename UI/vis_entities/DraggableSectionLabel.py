@@ -134,8 +134,12 @@ class DraggableSectionLabel:
         self.canvas = canvas
         self.label = label
         self.id = id
+        # left-click to drag section
         label.bind("<ButtonPress-1>", self.press) # was ButtonPress
+        
+        # right-click to remove section (needs two bindings to work on both trackpad and mouse)
         label.bind("<ButtonRelease-2>", self.destroy)
+        label.bind("<ButtonRelease-3>", self.destroy)
 
     # Shifts other boxes and returns new x-coord
     def shift_others_to_accomodate_drop(self, x):

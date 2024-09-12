@@ -4,9 +4,12 @@
         "time_signature": "4/4",
         "bpm": "60",
         "chord_mode": "Optimal",
-        "song_order": "maj"
+        "ordered_section_ids": [
+            1
+        ]
     },
     {
+        "id": 1,
         "name": "maj",
         "num_measures": 4,
         "strum_pattern": "Down/Up",
@@ -80,6 +83,7 @@
         ]
     },
     {
+        "id": 2,
         "name": "min",
         "num_measures": 4,
         "strum_pattern": "Down/Up",
