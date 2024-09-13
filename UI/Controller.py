@@ -378,8 +378,7 @@ class Controller:
         section_frame.update_section_data(num_measures, left_arm, right_arm)
 
     def _build_complete_arm_lists(self):
-        left_arm = []
-        right_arm = []
+        left_arm, right_arm = [], []
 
         # loop through song builder and append individual section left/right arm lists to the total lists
         for dd_section in DraggableSectionLabel.existing_draggables_list:

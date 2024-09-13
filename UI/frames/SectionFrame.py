@@ -279,13 +279,11 @@ class SectionFrame(ctk.CTkScrollableFrame):
 
         return (left_arm, right_arm)
 
-    # TODO: test this, changed in PR
     # Helper method to fill section with left_arm, right_arm data
     def insert_chord_strum_data(self, left_arm, right_arm):
-        # flatten left_arm, right_arm lists to 1D lists
+        # flatten left_arm, right_arm lists to 1D lists  
         left_arm = [item for sublist in left_arm for item in sublist]
         right_arm = [item for sublist in right_arm for item in sublist]
-
         # insert left arm (chord) data
         i = 0
         for e in reversed(self.grid_slaves(row=2)):
@@ -293,11 +291,16 @@ class SectionFrame(ctk.CTkScrollableFrame):
             e.delete(0, tk.END)
             e.insert(0, left_arm[i])
             i += 1
-
         # insert right arm (strum) data
         i = 0
         for e in reversed(self.grid_slaves(row=3)):
-            if i != 0:
-                e.delete(0, tk.END)
-                e.insert(0, right_arm[i - 1])
+            # if i != 0:
+            e.delete(0, tk.END)
+            e.insert(0, right_arm[i])
             i += 1
+
+    def update_section_data(self, num_measures, left_arm, right_arm):
+        for i in range(num_measures - 1):
+            self.add_measure()
+
+        self.insert_chord_strum_data(left_arm, right_arm)

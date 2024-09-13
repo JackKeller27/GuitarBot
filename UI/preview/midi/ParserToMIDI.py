@@ -35,6 +35,10 @@ def get_next_chord_strum(left_arm, right_arm, bpm, subdiv_per_beat, measure_idx,
 
     MIDI_note_ons, MIDI_note_offs = chord_name_to_MIDI(curr_chord_name, is_downstrum)
 
+    # helps when loading from json, there's probably a better place for this
+    if type(bpm) != type(1):
+        bpm = int(bpm)
+
     note_duration = (60 / (bpm * subdiv_per_beat)) * curr_chord_subdiv_count # subdiv_duration * subdiv_count
     MIDI_tuple = (MIDI_note_ons, MIDI_note_offs, note_duration)
     curr_chord_name = next_chord_name
