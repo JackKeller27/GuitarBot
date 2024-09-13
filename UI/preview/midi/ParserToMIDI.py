@@ -35,6 +35,10 @@ def get_next_chord_strum(left_arm, right_arm, bpm, subdiv_per_beat, measure_idx,
 
     MIDI_note_ons, MIDI_note_offs = chord_name_to_MIDI(curr_chord_name, is_downstrum)
 
+    # helps when loading from json, there's probably a better place for this
+    if type(bpm) != type(1):
+        bpm = int(bpm)
+
     note_duration = (60 / (bpm * subdiv_per_beat)) * curr_chord_subdiv_count # subdiv_duration * subdiv_count
     MIDI_tuple = (MIDI_note_ons, MIDI_note_offs, note_duration)
     curr_chord_name = next_chord_name
@@ -86,7 +90,7 @@ def arms_to_MIDI(left_arm, right_arm, bpm, subdiv_per_beat):
 ### is_downstrum: true if downstrum, false if upstrum
 def chord_name_to_MIDI(chord_name, is_downstrum):
     MIDI_note_ons, MIDI_note_offs = [], []
-    open_note = 40 # E2 in standard tuning
+    open_note = 40 - PERFECT_FOURTH # E2 in standard tuning minus offset for loop
 
     # map sharps to flats
     if len(chord_name) >= 2 and chord_name[1] == '#':
@@ -99,14 +103,15 @@ def chord_name_to_MIDI(chord_name, is_downstrum):
     # should emphasize 1 and 3 beats in 4/4?
     for fret_number_of_note in chord_tab:
         string_idx -= 1
-        if fret_number_of_note == 'X' or fret_number_of_note == 'x': 
-            continue
-        MIDI_note_ons.append(Message("note_on", note=open_note+fret_number_of_note, velocity=80, channel=0).bytes()) # default velocity is 64
-        MIDI_note_offs.append(Message("note_off", note=open_note+fret_number_of_note, channel=0).bytes()) # removed duration, doesn't work w/ VST?
-        if string_idx != 3:
+        if string_idx != 2:
             open_note += PERFECT_FOURTH
         else:
             open_note += MAJOR_THIRD
+        if fret_number_of_note == 'X' or fret_number_of_note == 'x':
+            continue
+        
+        MIDI_note_ons.append(Message("note_on", note=open_note+fret_number_of_note, velocity=80, channel=0).bytes()) # default velocity is 64
+        MIDI_note_offs.append(Message("note_off", note=open_note+fret_number_of_note, channel=0).bytes()) # removed duration, doesn't work w/ VST?
 
     if not is_downstrum: # upstrum
         MIDI_note_ons.reverse() # reverse order of notes to mimic upstrum (high e comes first)
