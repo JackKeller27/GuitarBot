@@ -11,6 +11,7 @@
 #include "Trajectory.h"
 #include <ArduinoQueue.h>
 #include <ArduinoEigen.h>
+#include "networkHandler.h"
 
 class StrikerController {
 public:
@@ -29,7 +30,7 @@ public:
 
     Error_t init(MotorSpec spec, bool bInitCAN = true) {
         LOG_LOG("Initializing Controller");
-        int err = 0;
+//        int err = 0;
         if (bInitCAN) {
             if (!CanBus.begin(CAN_BAUD_1000K, CAN_STD_FORMAT)) {
                 LOG_ERROR("CAN open failed");
@@ -37,6 +38,10 @@ public:
             }
             CanBus.attachRxInterrupt(canRxHandle);
         }
+        //TODO: Confirm initialization for Ethernet messaging
+//        Error_t err = m_socket.init(&strikerController::packetCallback);
+//        if (err != kNoError)
+//            return err;
 
         RPDOTimer.setPeriod(PDO_RATE * 1000);
         RPDOTimer.attachInterrupt(RPDOTimerIRQHandler);
@@ -56,7 +61,7 @@ public:
             if (err != kNoError) {
                 LOG_ERROR("Cannot initialize slider with id %i. Error: %i", i, err);
             }
-            //m_striker[i].setPresserCallback(pPresserCallBack);
+            //m_strinitiker[i].setPresserCallback(pPresserCallBack);
         }
         MotorSpec spec2 = EC20;
         err = kNoError;
@@ -136,6 +141,7 @@ public:
         }
         if (bTerminateCAN)
             CanBus.end();
+        m_socket.close();
     }
 
     Striker::Command getStrikerMode(char mode) {
@@ -521,7 +527,12 @@ public:
         }
     }
 
+    void poll() {
+        m_socket.poll();
+    }
+
 private:
+    NetworkHandler m_socket;
     Striker m_striker[NUM_STRIKERS + NUM_PRESSERS + 1]; // 0 is dummy
     static StrikerController* pInstance;
     volatile bool m_bPlaying = false;
@@ -563,6 +574,23 @@ private:
         reset();
         destroyInstance();
     }
+
+    //TODO: confirm implementation for ethernet messaging
+//    static void packetCallback(char* packet, size_t packetSize) {
+//        float point = 0;
+//        if (packetSize == 1) {
+//            // Commands
+//        } else if (packetSize == sizeof(point)) {
+//            // int32_t point = 0;
+//            // for (int i = 0; i < NUM_BYTES_PER_VALUE; ++i)
+//            //     point = point | ((packet[i] & 0xFF) << (8 * i));
+//            memcpy(&point, packet, sizeof(point));
+//            //TODO: how does setPoint(VVVV) vs currentPoint work for GuitarBot?
+//            pInstance->m_iSetPoint = point;
+//        } else {
+//            LOG_ERROR("Packet Corrupted. Received %i bytes", packetSize);
+//        }
+//    }
 
     static void canRxHandle(can_message_t* arg) {
         auto id = arg->id - COB_ID_SDO_SC;

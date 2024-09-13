@@ -1,6 +1,6 @@
 [
     {
-        "song_title": "FinalApril2024",
+        "song_title": "FinalApril2024(1)",
         "time_signature": "4/4",
         "bpm": 60,
         "chord_mode": "Optimal",
@@ -178,9 +178,9 @@
         "strum_pattern": "Custom",
         "left_arm": [
             [
-                "Em",
+                "F#",
                 "",
-                "C",
+                "G",
                 ""
             ]
         ],
@@ -204,9 +204,9 @@
         "strum_pattern": "Custom",
         "left_arm": [
             [
-                "Bm",
+                "A",
                 "",
-                "Em",
+                "F#",
                 ""
             ]
         ],

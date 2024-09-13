@@ -993,7 +993,7 @@ int Epos4::setCurrentControlParameters_EC60() {
 
 int Epos4::setPositionControlParameters() {
     int n;
-    n = writeObj(POS_CTRL_PARAM_ADDR, PC_P_GAIN, 1230000);
+    n = writeObj(POS_CTRL_PARAM_ADDR, PC_P_GAIN, 830000);
     if (n != 0) {
         LOG_ERROR("Write Obj failed. Error code: ", m_uiError);
         return -1;
