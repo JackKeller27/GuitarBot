@@ -141,7 +141,7 @@ public:
         }
         if (bTerminateCAN)
             CanBus.end();
-        m_socket.close();
+        //m_socket.close();
     }
 
     Striker::Command getStrikerMode(char mode) {
@@ -527,12 +527,12 @@ public:
         }
     }
 
-    void poll() {
-        m_socket.poll();
-    }
+//    void poll() {
+//        m_socket.poll();
+//    }
 
 private:
-    NetworkHandler m_socket;
+    //NetworkHandler m_socket;
     Striker m_striker[NUM_STRIKERS + NUM_PRESSERS + 1]; // 0 is dummy
     static StrikerController* pInstance;
     volatile bool m_bPlaying = false;
